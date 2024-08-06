@@ -4,6 +4,9 @@ Building an MS Exchange email client using:
 * [`shadcn-vue`](https://www.shadcn-vue.com/)
 * [Microsoft Graph API](https://developer.microsoft.com/en-us/graph)
 
+This is based on the [`shadcn-vue` Mail example](https://www.shadcn-vue.com/examples/mail.html).  
+The code for that example is located [here](https://github.com/radix-vue/shadcn-vue/tree/dev/apps/www/src/examples/mail).
+
 ## Setup
 
 We follow the [Vite installation instructions for `shadcn-vue`](https://www.shadcn-vue.com/docs/installation/vite.html).
