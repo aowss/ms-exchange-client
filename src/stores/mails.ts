@@ -188,6 +188,10 @@ export const useMailsStore = defineStore('mails', () => {
   ])
 
   // actions
+  const getMail = async () => {
+
+  }
+
   const filteredMailList = (search: string): Mail[] => {
     if (!search || search.trim().length === 0) return mails.value
     return mails.value.filter((item) => {

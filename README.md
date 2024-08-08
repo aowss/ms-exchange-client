@@ -1,4 +1,17 @@
-# ms-exchange-client
+<!-- TOC -->
+* [Setup](#setup)
+  * [Recommended IDE Setup](#recommended-ide-setup)
+  * [Type Support for `.vue` Imports in TS](#type-support-for-vue-imports-in-ts)
+  * [Customize configuration](#customize-configuration)
+* [Build, Test and Run](#build-test-and-run)
+  * [Install Dependencies](#install-dependencies)
+  * [Environment Variables](#environment-variables)
+  * [Run Locally](#run-locally)
+  * [Type-Check, Compile and Minify for Production](#type-check-compile-and-minify-for-production)
+  * [Run Unit Tests with Vitest](#run-unit-tests-with-vitest)
+  * [Run End-to-End Tests with Playwright](#run-end-to-end-tests-with-playwright)
+  * [Lint with ESLint](#lint-with-eslint)
+<!-- TOC -->
 
 Building an MS Exchange email client using:
 * [`shadcn-vue`](https://www.shadcn-vue.com/)
@@ -7,7 +20,9 @@ Building an MS Exchange email client using:
 This is based on the [`shadcn-vue` Mail example](https://www.shadcn-vue.com/examples/mail.html).  
 The code for that example is located [here](https://github.com/radix-vue/shadcn-vue/tree/dev/apps/www/src/examples/mail).
 
-## Setup
+The authentication aspect is based on the [MSAL.js + Vue 3 + TypeScript Sample](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app).
+
+# Setup
 
 We follow the [Vite installation instructions for `shadcn-vue`](https://www.shadcn-vue.com/docs/installation/vite.html).
 
@@ -39,31 +54,44 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 
 See [Vite Configuration Reference](https://vitejs.dev/config/).
 
-## Project Setup
+# Build, Test and Run
+
+## Install Dependencies
 
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+## Environment Variables
+
+Create a `.env` file at the root of the project and specify the following variables:
+
+```dotenv
+VITE_MSAL_CLIENT_ID=
+VITE_MSAL_TENANT_ID=
+```
+
+The meaning of those environment variables is explained [here](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app#configuration).
+
+## Run Locally
 
 ```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## Type-Check, Compile and Minify for Production
 
 ```sh
 npm run build
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+## Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
 npm run test:unit
 ```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+## Run End-to-End Tests with [Playwright](https://playwright.dev)
 
 ```sh
 # Install browsers for the first run
@@ -82,7 +110,7 @@ npm run test:e2e -- tests/example.spec.ts
 npm run test:e2e -- --debug
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+## Lint with [ESLint](https://eslint.org/)
 
 ```sh
 npm run lint
