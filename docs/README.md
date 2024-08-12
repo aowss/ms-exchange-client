@@ -4,6 +4,8 @@ There are some notes on using the [Microsoft Graph API](https://developer.micros
 
 The responses are taken from the [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer).
 
+The [Postman collection](./Microsoft%20Graph.postman_collection.json) is downloaded from [here](https://www.postman.com/microsoftgraph/microsoft-graph/overview).
+
 ## Get my email
 
 `GET https://graph.microsoft.com/v1.0/me/messages`
