@@ -1,25 +1,12 @@
 <script lang="ts" setup>
-import Mail from './components/Mail.vue'
+import NavBar from '@/components/NavBar.vue'
 </script>
 
 <template>
-  <div class="md:hidden">
-    <image
-      src="/examples/mail-dark.png"
-      :width="1280"
-      :height="727"
-      alt="Mail"
-      class="hidden dark:block"
-    />
-    <image
-      src="/examples/mail-light.png"
-      :width="1280"
-      :height="727"
-      alt="Mail"
-      class="block dark:hidden"
-    />
-  </div>
-  <div class="hidden flex-col md:flex">
-    <Mail :nav-collapsed-size="4" />
+  <div>
+    <NavBar />
+    <div>
+      <router-view />
+    </div>
   </div>
 </template>

@@ -1,4 +1,5 @@
 <!-- TOC -->
+* [To Do](#to-do)
 * [Setup](#setup)
   * [Recommended IDE Setup](#recommended-ide-setup)
   * [Type Support for `.vue` Imports in TS](#type-support-for-vue-imports-in-ts)
@@ -21,6 +22,10 @@ This is based on the [`shadcn-vue` Mail example](https://www.shadcn-vue.com/exam
 The code for that example is located [here](https://github.com/radix-vue/shadcn-vue/tree/dev/apps/www/src/examples/mail).
 
 The authentication aspect is based on the [MSAL.js + Vue 3 + TypeScript Sample](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app).
+
+# To Do
+
+* Get rid of the `element-plus` and use [`shadcn-vue`](https://www.shadcn-vue.com/) instead
 
 # Setup
 

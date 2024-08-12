@@ -30,7 +30,7 @@ const mailsStore = useMailsStore()
 interface MailProps {
   defaultLayout?: number[]
   defaultCollapsed?: boolean
-  navCollapsedSize: number
+  navCollapsedSize?: number
 }
 
 const props = withDefaults(defineProps<MailProps>(), {
@@ -134,7 +134,7 @@ function onExpand() {
       <ResizablePanel
         id="resize-panel-1"
         :default-size="defaultLayout[0]"
-        :collapsed-size="navCollapsedSize"
+        :collapsed-size="navCollapsedSize || 4"
         collapsible
         :min-size="15"
         :max-size="20"
