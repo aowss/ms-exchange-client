@@ -143,7 +143,7 @@ function onExpand() {
         @collapse="onCollapse"
       >
         <div :class="cn('flex h-[52px] items-center justify-center', isCollapsed ? 'h-[52px]' : 'px-2')">
-          <AccountSwitcher :is-collapsed="isCollapsed" :accounts="accountsStore.accounts" />
+          <AccountSwitcher :is-collapsed="isCollapsed" :accounts="accountsStore.accountsDetails" />
         </div>
         <Separator />
         <Nav

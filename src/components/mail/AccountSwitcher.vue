@@ -3,14 +3,11 @@ import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/lib/registry/new-york/ui/select'
 import { cn } from '@/lib/utils'
+import type { Account } from '@/stores/accounts'
 
 interface AccountSwitcherProps {
   isCollapsed: boolean
-  accounts: {
-    label: string
-    email: string
-    icon: string
-  }[]
+  accounts: Account[]
 }
 
 const props = defineProps<AccountSwitcherProps>()
@@ -30,7 +27,7 @@ const selectedEmailData = computed(() => props.accounts.find(item => item.email 
     >
       <SelectValue placeholder="Select an account">
         <div class="flex items-center gap-3">
-          <Icon class="size-4" :icon="selectedEmailData!.icon" />
+          <Icon class="size-4" :icon="selectedEmailData!.icon || ''" />
           <span v-if="!isCollapsed">
             {{ selectedEmailData!.label }}
           </span>
@@ -40,7 +37,7 @@ const selectedEmailData = computed(() => props.accounts.find(item => item.email 
     <SelectContent>
       <SelectItem v-for="account of accounts" :key="account.email" :value="account.email">
         <div class="flex items-center gap-3 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-foreground">
-          <Icon class="size-4" :icon="account.icon" />
+          <Icon class="size-4" :icon="account.icon || ''" />
           {{ account.email }}
         </div>
       </SelectItem>
