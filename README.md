@@ -21,6 +21,8 @@ Building an MS Exchange email client using:
 This is based on the [`shadcn-vue` Mail example](https://www.shadcn-vue.com/examples/mail.html).  
 The code for that example is located [here](https://github.com/radix-vue/shadcn-vue/tree/dev/apps/www/src/examples/mail).
 
+Since this is a Single Page Application, we use Microsoft Graph's [Authorization code provider](https://learn.microsoft.com/en-us/graph/sdks/choose-authentication-providers?tabs=csharp#authorization-code-provider).
+
 The authentication aspect is based on the [MSAL.js + Vue 3 + TypeScript Sample](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app).
 
 # To Do
@@ -74,6 +76,7 @@ Create a `.env` file at the root of the project and specify the following variab
 ```dotenv
 VITE_MSAL_CLIENT_ID=
 VITE_MSAL_TENANT_ID=
+VITE_SECRET_ID=
 ```
 
 The meaning of those environment variables is explained [here](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app#configuration).
