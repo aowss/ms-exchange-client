@@ -30,30 +30,42 @@ export const useMailsStore = defineStore('mails', () => {
   console.log('useMailsStore')
   // state
   const mails: Ref<Mail[]> = ref([])
+  const selectedMailId: Ref<string> = ref()
+  const filter: Ref<string> = ref()
 
   // actions
-  async function getMail() {
-    console.log('getMail')
-    mails.value = await getInbox().then(toMail)
-    console.log('mails', mails.value)
+  const getMail = async () => {
+    const result = await getInbox().then(toMail)
+    if (result) {
+      mails.value = result
+      selectedMailId.value = mails.value[0].id
+    }
+    return mails.value  // returning the state
   }
 
-  const filteredMailList = (search: string): Mail[] => {
-    console.log('search', search)
-    if (!search || search.trim().length === 0) return mails.value
-    return mails.value.filter((item) => {
-      return item.name.includes(search)
-        || item.email.includes(search)
-        || item.name.includes(search)
-        || item.subject.includes(search)
-        || item.text.includes(search)
-    })
+  const filterMailList = (search: string | undefined): Mail[] => {
+    filter.value = search
+    return filteredMailList.value  // returning the state
   }
 
-  const selectedMailData = (id: string | undefined): Mail | undefined => mails.value.find((mail) => mail.id === id) || mails.value[0]
+  const selectMail = (id: string | undefined) => {
+    if (id && mails.value.map(mail => mail.id).includes(id)) selectedMailId.value = id
+    return selectedMail.value  // returning the state
+  }
 
   // getters
-  const unreadMailList: ComputedRef<Mail[]> = computed(() => mails.value.filter(item => !item.read))
+  const selectedMail: ComputedRef<Mail> = computed(() => mails.value.find((mail) => mail.id === selectedMailId.value) || mails.value[0])
+  const filteredMailList: ComputedRef<Mail[]> = computed(() => {
+    if (!filter.value || filter.value.trim().length === 0) return mails.value
+    return mails.value.filter((item) =>
+      item.name.includes(filter.value)
+      || item.email.includes(filter.value)
+      || item.name.includes(filter.value)
+      || item.subject.includes(filter.value)
+      || item.text.includes(filter.value)
+    )
+  })
+  const unreadMailList: ComputedRef<Mail[]> = computed(() => filteredMailList.value.filter(item => !item.read))
 
-  return { mails, getMail, filteredMailList, selectedMailData, unreadMailList }
+  return { mails, selectedMailId, filter, getMail, selectMail, filterMailList, selectedMail, unreadMailList, filteredMailList }
 })

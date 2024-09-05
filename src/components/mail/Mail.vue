@@ -184,7 +184,7 @@ function onExpand() {
             </form>
           </div>
           <TabsContent value="all" class="m-0">
-            <MailList v-model:selected-mail="selectedMail" :items="mailsStore.filteredMailList(debouncedSearch)" />
+            <MailList v-model:selected-mail="selectedMail" :items="mailsStore.filterMailList(debouncedSearch)" />
           </TabsContent>
           <TabsContent value="unread" class="m-0">
 <!--            TODO: handle the search filter for unread mails-->
@@ -194,7 +194,7 @@ function onExpand() {
       </ResizablePanel>
       <ResizableHandle id="resiz-handle-2" with-handle />
       <ResizablePanel id="resize-panel-3" :default-size="defaultLayout[2]">
-        <MailDisplay :mail="mailsStore.selectedMailData(selectedMail)" />
+        <MailDisplay :mail="mailsStore.selectMail(selectedMail)" />
       </ResizablePanel>
     </ResizablePanelGroup>
   </TooltipProvider>
