@@ -16,6 +16,7 @@ import { Separator } from '@/lib/registry/new-york/ui/separator'
 import { Switch } from '@/lib/registry/new-york/ui/switch'
 import { Textarea } from '@/lib/registry/new-york/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/lib/registry/new-york/ui/tooltip'
+import { useMailsStore } from '@/stores/mails'
 
 interface MailDisplayProps {
   mail: Mail | undefined
@@ -31,6 +32,14 @@ const mailFallbackName = computed(() => {
 })
 
 const today = new Date()
+
+const mailsStore = useMailsStore()
+
+const replyMessage = ref('')
+
+const reply = () => {
+  mailsStore.reply(replyMessage.value)
+}
 </script>
 
 <template>
@@ -208,6 +217,7 @@ const today = new Date()
             <Textarea
               class="p-4"
               :placeholder="`Reply ${mail.name}...`"
+              v-model="replyMessage"
             />
             <div class="flex items-center">
               <Label
@@ -221,6 +231,7 @@ const today = new Date()
                 type="button"
                 size="sm"
                 class="ml-auto"
+                @click="reply"
               >
                 Send
               </Button>

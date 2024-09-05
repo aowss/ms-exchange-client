@@ -9,7 +9,8 @@ import {
 import { appConfig } from '@/config/config'
 
 const URL_USER = '/me'
-const URL_SEND_MAIL = 'me/sendMail'
+const URL_SEND_MAIL = '/me/sendMail'
+// const URL_REPLY_MAIL = '/me/sendMail'
 const URL_INBOX_MESSAGES = '/me/mailFolders/inbox/messages'
 
 export const getGraphClient = async (pca: PublicClientApplication, graphScopes: string[]) => {
@@ -55,6 +56,24 @@ export const sendMail = async (subject: string, body: string, recipients: string
   return graphClient
     .api(URL_SEND_MAIL)
     .post({ message: message });
+}
+
+export const replyToMail = async (id: string, body: string, recipients: string[]) => {
+  if (!graphClient) throw new Error('Graph has not been initialized for user auth');
+  if (!body || body.trim().length === 0) throw new Error("Body is mandatory")
+
+  const reply = {
+    message: {
+      toRecipients: recipients
+        .filter(recipient => recipient.trim().length !== 0)
+        .map(recipient => ({ emailAddress: { address: recipient } }))
+    },
+    comment: body
+  };
+
+  return graphClient
+    .api(`/me/messages/${id}/reply`)
+    .post(reply);
 }
 
 export const getUser = async(properties: string[] = ['displayName', 'mail', 'userPrincipalName']): Promise<User> => {

@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { getInbox } from '@/lib/graphHelper'
+import { getInbox, replyToMail } from '@/lib/graphHelper'
 import type { PageCollection } from '@microsoft/microsoft-graph-client'
 
 export interface Mail {
@@ -30,6 +30,7 @@ export const useMailsStore = defineStore('mails', () => {
   console.log('useMailsStore')
   // state
   const mails: Ref<Mail[]> = ref([])
+  const selectedMail: Ref<Mail> = ref()
 
   // actions
   async function getMail() {
@@ -38,7 +39,7 @@ export const useMailsStore = defineStore('mails', () => {
     console.log('mails', mails.value)
   }
 
-  const filteredMailList = (search: string): Mail[] => {
+  const filteredMailList = (search: string | undefined): Mail[] => {
     console.log('search', search)
     if (!search || search.trim().length === 0) return mails.value
     return mails.value.filter((item) => {
@@ -52,8 +53,13 @@ export const useMailsStore = defineStore('mails', () => {
 
   const selectedMailData = (id: string | undefined): Mail | undefined => mails.value.find((mail) => mail.id === id) || mails.value[0]
 
+  const reply = async (body: string) => {
+    console.log('reply', body)
+    await replyToMail(selectedMail.value.id, body, [selectedMail.value.email])
+  }
+
   // getters
   const unreadMailList: ComputedRef<Mail[]> = computed(() => mails.value.filter(item => !item.read))
 
-  return { mails, getMail, filteredMailList, selectedMailData, unreadMailList }
+  return { mails, selectedMail, getMail, filteredMailList, selectedMailData, reply, unreadMailList }
 })
