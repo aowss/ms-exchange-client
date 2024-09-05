@@ -12,14 +12,14 @@
 
 <script setup lang="ts">
 import { useMsal } from '../composition-api/useMsal';
-import { loginRequest } from "../authConfig";
+import { loginRequest } from "../config/authConfig";
 
 const { instance } = useMsal();
 
 const loginPopup = () => {
   instance.loginPopup(loginRequest);
 }
-    
+
 const loginRedirect = () => {
   instance.loginRedirect(loginRequest);
 }

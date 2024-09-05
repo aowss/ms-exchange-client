@@ -1,7 +1,7 @@
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { msalInstance } from '@/authConfig'
+import { msalInstance } from '@/config/authConfig'
 import { type AccountInfo, type AuthenticationResult, EventType } from '@azure/msal-browser'
 
 export interface Account {
@@ -10,7 +10,7 @@ export interface Account {
   icon?: string,
 }
 
-const fromInfo = (info: AccountInfo): Account => ({
+const toAccount = (info: AccountInfo): Account => ({
   label: info.name || info.username,
   email: info.username
 })
@@ -31,8 +31,8 @@ export const useAccountsStore = defineStore('accounts', () => {
   }
 
   // getters
-  const accountsDetails: ComputedRef<Account[]> = computed(() => accounts.value.map(fromInfo));
-  const accountDetails: ComputedRef<Account> = computed(() => fromInfo(selectedAccount.value));
+  const accountsDetails: ComputedRef<Account[]> = computed(() => accounts.value.map(toAccount));
+  const accountDetails: ComputedRef<Account> = computed(() => toAccount(selectedAccount.value));
 
   // msalInstance.addEventCallback((event) => {
   //   console.log('event', event);

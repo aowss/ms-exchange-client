@@ -1,5 +1,5 @@
 import { type RouteLocationNormalized, type Router } from "vue-router";
-import { msalInstance, loginRequest } from "../authConfig";
+import { msalInstance, loginRequest } from "../config/authConfig";
 import { InteractionType, type PopupRequest, PublicClientApplication, type RedirectRequest } from "@azure/msal-browser";
 
 export function registerGuard(router: Router) {

@@ -6,7 +6,8 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from '@/router'
 import { msalPlugin } from '@/plugins/msalPlugin'
-import { msalInstance } from '@/authConfig'
+import { msalInstance } from '@/config/authConfig'
+// import { msalPublicClient } from '@/lib/clients'
 import { type AuthenticationResult, EventType } from '@azure/msal-browser'
 import { CustomNavigationClient } from '@/router/NavigationClient'
 import ElementPlus from 'element-plus';
@@ -33,9 +34,9 @@ msalInstance.addEventCallback((event) => {
 const app = createApp(App)
 
 app.use(ElementPlus);
+app.use(msalPlugin, msalInstance);
 app.use(createPinia())
 app.use(router)
-app.use(msalPlugin, msalInstance);
 
 router.isReady().then(() => {
   // Waiting for the router to be ready prevents race conditions when returning from a loginRedirect or acquireTokenRedirect
