@@ -13,15 +13,10 @@ import { CustomNavigationClient } from '@/router/NavigationClient'
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 
-const navigationClient = new CustomNavigationClient(router);
-msalInstance.setNavigationClient(navigationClient);
+//  TODO: check if this is needed
+// const navigationClient = new CustomNavigationClient(router);
+// msalInstance.setNavigationClient(navigationClient);
 
-// const accounts = msalInstance.getAllAccounts();
-// console.log('accounts', accounts);
-//
-// if (accounts.length > 0) {
-//   msalInstance.setActiveAccount(accounts[0]);
-// }
 msalInstance.addEventCallback((event) => {
   console.log('event', event);
   if (event.eventType === EventType.LOGIN_SUCCESS && event.payload) {
