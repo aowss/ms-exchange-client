@@ -26,6 +26,7 @@ import { useMailsStore } from '@/stores/mails'
 
 const accountsStore = useAccountsStore()
 const mailsStore = useMailsStore()
+await mailsStore.getMail()
 
 interface MailProps {
   defaultLayout?: number[]
