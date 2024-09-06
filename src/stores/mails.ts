@@ -35,11 +35,14 @@ export const useMailsStore = defineStore('mails', () => {
 
   // actions
   const getMail = async () => {
+    console.log('getMail')
     const result = await getInbox().then(toMail)
+    console.log('result', result)
     if (result) {
       mails.value = result
       selectedMailId.value = mails.value[0].id
     }
+    console.log('mails', mails.value)
     return mails.value  // returning the state
   }
 

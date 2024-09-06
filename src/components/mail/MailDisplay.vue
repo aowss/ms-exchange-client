@@ -5,7 +5,6 @@ import addDays from 'date-fns/addDays'
 import addHours from 'date-fns/addHours'
 import format from 'date-fns/format'
 import nextSaturday from 'date-fns/nextSaturday'
-import type { Mail } from '../data/mails'
 import { Calendar } from '@/lib/registry/new-york/ui/calendar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/lib/registry/new-york/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/lib/registry/new-york/ui/popover'
@@ -16,7 +15,7 @@ import { Separator } from '@/lib/registry/new-york/ui/separator'
 import { Switch } from '@/lib/registry/new-york/ui/switch'
 import { Textarea } from '@/lib/registry/new-york/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/lib/registry/new-york/ui/tooltip'
-import { useMailsStore } from '@/stores/mails'
+import { type Mail, useMailsStore } from '@/stores/mails'
 
 interface MailDisplayProps {
   mail: Mail | undefined
