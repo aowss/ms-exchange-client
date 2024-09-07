@@ -1,5 +1,14 @@
 <script lang="ts" setup>
-import { Archive, ArchiveX, Clock, Forward, MoreVertical, Reply, ReplyAll, Trash2 } from 'lucide-vue-next'
+import {
+  Archive,
+  ArchiveX,
+  Clock,
+  Forward,
+  MoreVertical,
+  Reply,
+  ReplyAll,
+  Trash2
+} from 'lucide-vue-next'
 import { computed } from 'vue'
 import addDays from 'date-fns/addDays'
 import addHours from 'date-fns/addHours'
@@ -7,7 +16,12 @@ import format from 'date-fns/format'
 import nextSaturday from 'date-fns/nextSaturday'
 import type { Mail } from '../data/mails'
 import { Calendar } from '@/lib/registry/new-york/ui/calendar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/lib/registry/new-york/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/lib/registry/new-york/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/lib/registry/new-york/ui/popover'
 import { Avatar, AvatarFallback } from '@/lib/registry/new-york/ui/avatar'
 import { Button } from '@/lib/registry/new-york/ui/button'
@@ -26,7 +40,7 @@ const props = defineProps<MailDisplayProps>()
 const mailFallbackName = computed(() => {
   return props.mail?.name
     .split(' ')
-    .map(chunk => chunk[0])
+    .map((chunk) => chunk[0])
     .join('')
 })
 
@@ -77,44 +91,30 @@ const today = new Date()
             </PopoverTrigger>
             <PopoverContent class="flex w-[535px] p-0">
               <div class="flex flex-col gap-2 border-r px-2 py-4">
-                <div class="px-4 text-sm font-medium">
-                  Snooze until
-                </div>
+                <div class="px-4 text-sm font-medium">Snooze until</div>
                 <div class="grid min-w-[250px] gap-1">
-                  <Button
-                    variant="ghost"
-                    class="justify-start font-normal"
-                  >
+                  <Button variant="ghost" class="justify-start font-normal">
                     Later today
                     <span class="ml-auto text-muted-foreground">
-                      {{ format(addHours(today, 4), "E, h:m b") }}
+                      {{ format(addHours(today, 4), 'E, h:m b') }}
                     </span>
                   </Button>
-                  <Button
-                    variant="ghost"
-                    class="justify-start font-normal"
-                  >
+                  <Button variant="ghost" class="justify-start font-normal">
                     Tomorrow
                     <span class="ml-auto text-muted-foreground">
-                      {{ format(addDays(today, 1), "E, h:m b") }}
+                      {{ format(addDays(today, 1), 'E, h:m b') }}
                     </span>
                   </Button>
-                  <Button
-                    variant="ghost"
-                    class="justify-start font-normal"
-                  >
+                  <Button variant="ghost" class="justify-start font-normal">
                     This weekend
                     <span class="ml-auto text-muted-foreground">
-                      {{ format(nextSaturday(today), "E, h:m b") }}
+                      {{ format(nextSaturday(today), 'E, h:m b') }}
                     </span>
                   </Button>
-                  <Button
-                    variant="ghost"
-                    class="justify-start font-normal"
-                  >
+                  <Button variant="ghost" class="justify-start font-normal">
                     Next week
                     <span class="ml-auto text-muted-foreground">
-                      {{ format(addDays(today, 7), "E, h:m b") }}
+                      {{ format(addDays(today, 7), 'E, h:m b') }}
                     </span>
                   </Button>
                 </div>
@@ -194,7 +194,7 @@ const today = new Date()
           </div>
         </div>
         <div v-if="mail.date" class="ml-auto text-xs text-muted-foreground">
-          {{ format(new Date(mail.date), "PPpp") }}
+          {{ format(new Date(mail.date), 'PPpp') }}
         </div>
       </div>
       <Separator />
@@ -205,32 +205,17 @@ const today = new Date()
       <div class="p-4">
         <form>
           <div class="grid gap-4">
-            <Textarea
-              class="p-4"
-              :placeholder="`Reply ${mail.name}...`"
-            />
+            <Textarea class="p-4" :placeholder="`Reply ${mail.name}...`" />
             <div class="flex items-center">
-              <Label
-                html-for="mute"
-                class="flex items-center gap-2 text-xs font-normal"
-              >
-                <Switch id="mute" aria-label="Mute thread" /> Mute this
-                thread
+              <Label html-for="mute" class="flex items-center gap-2 text-xs font-normal">
+                <Switch id="mute" aria-label="Mute thread" /> Mute this thread
               </Label>
-              <Button
-                type="button"
-                size="sm"
-                class="ml-auto"
-              >
-                Send
-              </Button>
+              <Button type="button" size="sm" class="ml-auto"> Send </Button>
             </div>
           </div>
         </form>
       </div>
     </div>
-    <div v-else class="p-8 text-center text-muted-foreground">
-      No message selected
-    </div>
+    <div v-else class="p-8 text-center text-muted-foreground">No message selected</div>
   </div>
 </template>

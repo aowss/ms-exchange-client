@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useMsal } from '../composition-api/useMsal';
-import { loginRequest } from "../config/authConfig";
-import { useIsAuthenticated } from '../composition-api/useIsAuthenticated';
+import { useMsal } from '../composition-api/useMsal'
+import { appConfig } from '@/config'
+import { useIsAuthenticated } from '../composition-api/useIsAuthenticated'
 import WelcomeName from '@/components/WelcomeName.vue'
 
-const isAuthenticated = useIsAuthenticated();
+const isAuthenticated = useIsAuthenticated()
 
-const { instance } = useMsal();
+const { instance } = useMsal()
 
-const loginPopup = () => instance.loginPopup(loginRequest);
+const loginPopup = () => instance.loginPopup(appConfig.loginScopes)
 // const loginRedirect = () => instance.loginRedirect(loginRequest);
-const logoutPopup = () => instance.logoutPopup({ mainWindowRedirectUri: "/" });
+const logoutPopup = () => instance.logoutPopup({ mainWindowRedirectUri: '/' })
 // const logoutRedirect = () => instance.logoutRedirect();
 </script>
 
@@ -33,7 +33,7 @@ const logoutPopup = () => instance.logoutPopup({ mainWindowRedirectUri: "/" });
 
 <style>
 a {
-    text-decoration: none;
-    color: #fff;
+  text-decoration: none;
+  color: #fff;
 }
 </style>
