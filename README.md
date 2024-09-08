@@ -23,7 +23,7 @@ The code for that example is located [here](https://github.com/radix-vue/shadcn-
 
 Since this is a Single Page Application, we use Microsoft Graph's [Authorization code provider](https://learn.microsoft.com/en-us/graph/sdks/choose-authentication-providers?tabs=csharp#authorization-code-provider).
 
-The authentication aspect is based on the [MSAL.js + Vue 3 + TypeScript Sample](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app).
+Since the [MSAL.js + Vue 3 + TypeScript Sample](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app) is complicated, the authentication aspect is based on Dave Stewart's article: [A guide to MSAL authentication in Vue](https://davestewart.co.uk/blog/msal-vue/).
 
 # To Do
 
