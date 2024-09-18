@@ -1,4 +1,4 @@
-import { type App, reactive } from 'vue'
+import { type App, type Reactive, reactive } from 'vue'
 import {
   type EventMessage,
   EventMessageUtils,
@@ -8,9 +8,7 @@ import {
   type AccountInfo
 } from '@azure/msal-browser'
 
-type AccountIdentifiers = Partial<
-  Pick<AccountInfo, 'homeAccountId' | 'localAccountId' | 'username'>
->
+type AccountIdentifiers = Partial<Pick<AccountInfo, "homeAccountId"|"localAccountId"|"username">>;
 
 /**
  * Helper function to determine whether 2 arrays are equal
@@ -18,44 +16,46 @@ type AccountIdentifiers = Partial<
  * @param arrayA
  * @param arrayB
  */
-function accountArraysAreEqual(
-  arrayA: Array<AccountIdentifiers>,
-  arrayB: Array<AccountIdentifiers>
-): boolean {
+function accountArraysAreEqual(arrayA: Array<AccountIdentifiers>, arrayB: Array<AccountIdentifiers>): boolean {
   if (arrayA.length !== arrayB.length) {
-    return false
+    return false;
   }
 
-  const comparisonArray = [...arrayB]
+  const comparisonArray = [...arrayB];
 
   return arrayA.every((elementA) => {
-    const elementB = comparisonArray.shift()
+    const elementB = comparisonArray.shift();
     if (!elementA || !elementB) {
-      return false
+      return false;
     }
 
-    return (
-      elementA.homeAccountId === elementB.homeAccountId &&
-      elementA.localAccountId === elementB.localAccountId &&
-      elementA.username === elementB.username
-    )
-  })
+    return (elementA.homeAccountId === elementB.homeAccountId) &&
+      (elementA.localAccountId === elementB.localAccountId) &&
+      (elementA.username === elementB.username);
+  });
+}
+
+export interface State {
+  instance: PublicClientApplication,
+  status: InteractionStatus,
+  accounts: AccountInfo[],
+  selectedAccount: AccountInfo | null
 }
 
 export const msalPlugin = {
   install: (app: App, msalInstance: PublicClientApplication) => {
-    const inProgress = InteractionStatus.Startup
-    const accounts = msalInstance.getAllAccounts()
-
-    const state = reactive({
+    const state: Reactive<State> = reactive({
       instance: msalInstance,
-      inProgress: inProgress,
-      accounts: accounts
+      status: InteractionStatus.Startup,
+      accounts: msalInstance.getAllAccounts(),
+      selectedAccount: msalInstance.getActiveAccount()
     })
 
     app.config.globalProperties.$msal = state
 
     msalInstance.addEventCallback((message: EventMessage) => {
+      console.log('message', message)
+
       switch (message.eventType) {
         case EventType.ACCOUNT_ADDED:
         case EventType.ACCOUNT_REMOVED:

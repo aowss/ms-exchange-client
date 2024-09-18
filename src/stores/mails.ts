@@ -1,7 +1,19 @@
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getInbox } from '@/lib/graphHelper'
-import type { PageCollection } from '@microsoft/microsoft-graph-client'
+import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
+import { useAccountsStore } from '@/stores/accounts'
+import {
+  type AccountInfo,
+  InteractionType,
+  type IPublicClientApplication,
+  PublicClientApplication
+} from '@azure/msal-browser'
+import {
+  AuthCodeMSALBrowserAuthenticationProvider
+} from '@microsoft/microsoft-graph-client/authProviders/authCodeMsalBrowser'
+import { msalPublicClient } from '@/lib/clients'
+import { appConfig } from '@/config'
 
 export interface Mail {
   id: string
@@ -26,12 +38,26 @@ const toMail = (page: PageCollection): Mail[] =>
     labels: mail.categories
   }))
 
+const accountsStore = useAccountsStore()
+
+export const getGraphClient = async (pca: PublicClientApplication, account: AccountInfo | undefined, graphScopes: string[]): Client => {
+  if (!account) await accountsStore.login()
+  const authProvider = new AuthCodeMSALBrowserAuthenticationProvider(pca, {
+    account: account || accountsStore.selectedAccount,
+    interactionType: InteractionType.Popup,
+    scopes: graphScopes
+  })
+
+  return Client.initWithMiddleware({ authProvider: authProvider })
+}
+
 export const useMailsStore = defineStore('mails', () => {
   console.log('useMailsStore')
   // state
+  const graphClient = getGraphClient(msalPublicClient, accountsStore.selectedAccount, appConfig.graphScopes)
   const mails: Ref<Mail[]> = ref([])
-  const selectedMailId: Ref<string> = ref()
-  const filter: Ref<string> = ref()
+  const selectedMailId: Ref<string | undefined> = ref()
+  const filter: Ref<string | undefined> = ref()
 
   // actions
   const getMail = async () => {
@@ -61,11 +87,11 @@ export const useMailsStore = defineStore('mails', () => {
     if (!filter.value || filter.value.trim().length === 0) return mails.value
     return mails.value.filter(
       (item) =>
-        item.name.includes(filter.value) ||
-        item.email.includes(filter.value) ||
-        item.name.includes(filter.value) ||
-        item.subject.includes(filter.value) ||
-        item.text.includes(filter.value)
+        item.name.includes(<string>filter.value) ||
+        item.email.includes(<string>filter.value) ||
+        item.name.includes(<string>filter.value) ||
+        item.subject.includes(<string>filter.value) ||
+        item.text.includes(<string>filter.value)
     )
   })
   const unreadMailList: ComputedRef<Mail[]> = computed(() =>

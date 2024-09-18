@@ -12,10 +12,9 @@ const URL_INBOX_MESSAGES = '/me/mailFolders/inbox/messages'
 
 export const getGraphClient = async (pca: PublicClientApplication, graphScopes: string[]) => {
   console.log('getGraphClient', pca, graphScopes)
-  await pca.initialize()
   // Authenticate to get the user's account
   const authResult = await pca.acquireTokenPopup({
-    scopes: ['User.Read']
+    scopes: graphScopes
   })
 
   if (!authResult.account) {
@@ -31,9 +30,9 @@ export const getGraphClient = async (pca: PublicClientApplication, graphScopes: 
   return Client.initWithMiddleware({ authProvider: authProvider })
 }
 
-const graphClient = await getGraphClient(msalPublicClient, appConfig.graphScopes)
+// const graphClient = await getGraphClient(msalPublicClient, appConfig.graphScopes)
 
-export const sendMail = async (subject: string, body: string, recipients: string[]) => {
+export const sendMail = async (graphClient: Client, subject: string, body: string, recipients: string[]) => {
   if (!graphClient) throw new Error('Graph has not been initialized for user auth')
   if (!subject || subject.trim().length === 0) throw new Error('Subject is mandatory')
   if (!body || body.trim().length === 0) throw new Error('Body is mandatory')
@@ -59,6 +58,7 @@ export const sendMail = async (subject: string, body: string, recipients: string
 }
 
 export const getUser = async (
+  graphClient: Client,
   properties: string[] = ['displayName', 'mail', 'userPrincipalName']
 ): Promise<User> => {
   if (!graphClient) throw new Error('Graph has not been initialized for user auth')
@@ -67,6 +67,7 @@ export const getUser = async (
 }
 
 export const getInbox = async (
+  graphClient: Client,
   properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'],
   limit: number = 25
 ): Promise<PageCollection> => {

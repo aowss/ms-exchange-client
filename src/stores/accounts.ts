@@ -18,23 +18,32 @@ const toAccount = (info: AccountInfo): Account => ({
 export const useAccountsStore = defineStore('accounts', () => {
   // state
   const accounts: Ref<AccountInfo[]> = ref(msalPublicClient.getAllAccounts())
-  const selectedAccount: Ref<AccountInfo> = ref()
+  const selectedAccount: Ref<AccountInfo | undefined> = ref()
 
   // actions
-  const login = async (): Promise<AccountInfo> => {
+  const login = async (): Promise<void> => {
     const request: PopupRequest = { redirectUri: msalConfig.auth.redirectUri, scopes: appConfig.loginScopes }
-    return msalPublicClient
+    msalPublicClient
       .loginPopup(request)
       .then((result: AuthenticationResult) => {
         msalPublicClient.setActiveAccount(result.account)
         selectedAccount.value = result.account
+        console.log(`login success: ${selectedAccount.value}`)
+      })
+      .catch(err => {
+        console.error('login failure', err)
+        throw err
       })
   }
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     msalPublicClient
-      .logoutPopup({ mainWindowRedirectUri: msalConfig.auth.postLogoutRedirectUri })
-      .then(selectedAccount.value = null)
+      .logoutPopup({ mainWindowRedirectUri: msalConfig.auth.postLogoutRedirectUri || undefined })
+      .then(selectedAccount.value = undefined)
+      .catch(err => {
+        console.error('logout failure', err)
+        throw err
+      })
   }
 
   const selectAccount = (username: string): AccountInfo | undefined => {
@@ -48,7 +57,7 @@ export const useAccountsStore = defineStore('accounts', () => {
 
   // getters
   const accountsDetails: ComputedRef<Account[]> = computed(() => accounts.value.map(toAccount))
-  const accountDetails: ComputedRef<Account> = computed(() => toAccount(selectedAccount.value))
+  const accountDetails: ComputedRef<Account | undefined> = computed(() => selectedAccount.value ? toAccount(selectedAccount.value) : undefined)
   const isAuthenticated: ComputedRef<boolean> = computed(() => !!selectedAccount.value)
 
   return {

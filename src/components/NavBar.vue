@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import { useMsal } from '../composition-api/useMsal'
-import { appConfig } from '@/config'
-import { useIsAuthenticated } from '../composition-api/useIsAuthenticated'
 import WelcomeName from '@/components/WelcomeName.vue'
+import { useAccountsStore } from '@/stores/accounts'
 
-const isAuthenticated = useIsAuthenticated()
+const accountsStore = useAccountsStore()
+const isAuthenticated = accountsStore.isAuthenticated
 
-const { instance } = useMsal()
-
-const loginPopup = () => instance.loginPopup(appConfig.loginScopes)
-// const loginRedirect = () => instance.loginRedirect(loginRequest);
-const logoutPopup = () => instance.logoutPopup({ mainWindowRedirectUri: '/' })
-// const logoutRedirect = () => instance.logoutRedirect();
+const loginPopup = () => accountsStore.login()
+const logoutPopup = () => accountsStore.logout()
 </script>
 
 <template>
@@ -23,10 +18,10 @@ const logoutPopup = () => instance.logoutPopup({ mainWindowRedirectUri: '/' })
       <router-link to="/mail">Mail</router-link>
     </el-menu-item>
     <el-menu-item v-if="isAuthenticated">
-      <el-button type="contrast" @click="logoutPopup">Sign Out</el-button>
+      <el-button type="default" @click="logoutPopup">Sign Out</el-button>
     </el-menu-item>
     <el-menu-item v-if="!isAuthenticated">
-      <el-button type="contrast" @click="loginPopup">Sign In</el-button>
+      <el-button type="default" @click="loginPopup">Sign In</el-button>
     </el-menu-item>
   </el-menu>
 </template>
