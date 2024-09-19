@@ -10,28 +10,6 @@ const URL_USER = '/me'
 const URL_SEND_MAIL = 'me/sendMail'
 const URL_INBOX_MESSAGES = '/me/mailFolders/inbox/messages'
 
-export const getGraphClient = async (pca: PublicClientApplication, graphScopes: string[]) => {
-  console.log('getGraphClient', pca, graphScopes)
-  // Authenticate to get the user's account
-  const authResult = await pca.acquireTokenPopup({
-    scopes: graphScopes
-  })
-
-  if (!authResult.account) {
-    throw new Error('Could not authenticate')
-  }
-
-  const authProvider = new AuthCodeMSALBrowserAuthenticationProvider(pca, {
-    account: authResult.account,
-    interactionType: InteractionType.Popup,
-    scopes: graphScopes
-  })
-
-  return Client.initWithMiddleware({ authProvider: authProvider })
-}
-
-// const graphClient = await getGraphClient(msalPublicClient, appConfig.graphScopes)
-
 export const sendMail = async (graphClient: Client, subject: string, body: string, recipients: string[]) => {
   if (!graphClient) throw new Error('Graph has not been initialized for user auth')
   if (!subject || subject.trim().length === 0) throw new Error('Subject is mandatory')
@@ -67,18 +45,41 @@ export const getUser = async (
 }
 
 export const getInbox = async (
-  graphClient: Client,
+  accessToken: string,
   properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'],
   limit: number = 25
 ): Promise<PageCollection> => {
-  if (!graphClient) throw new Error('Graph has not been initialized for user auth')
 
-  return (
-    graphClient
-      .api(URL_INBOX_MESSAGES)
-      // .select(properties)
-      .top(limit)
-      .orderby('receivedDateTime DESC')
-      .get()
+  return callAPI(
+    'List messages',
+    URL_INBOX_MESSAGES,
+    'GET',
+    accessToken
   )
 }
+
+async function callAPI(name: string, URL: string, method: string, accessToken: string, body?: object) {
+  // try {
+    const response = await fetch(
+      URL,
+      {
+        method: method,
+        body: body ? JSON.stringify(body) : null,
+        headers: {
+          authorization: `bearer ${accessToken}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error while calling ${name}: status: ${response.status}`);
+    }
+
+    const json = await response.json();
+    console.log(json);
+    return json
+  // } catch (error: Error) {
+  //   console.error(error.message);
+  // }
+}
+

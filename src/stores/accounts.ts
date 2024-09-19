@@ -55,6 +55,31 @@ export const useAccountsStore = defineStore('accounts', () => {
     return account
   }
 
+  const acquireToken = async (scopes = ['user.read']) => {
+    const accessTokenRequest = {
+      scopes,
+      account: selectedAccount.value
+    }
+
+    let tokenResp
+    try {
+      // 1. Try to acquire token silently
+      tokenResp = await msalPublicClient.acquireTokenSilent(accessTokenRequest)
+      console.log('### MSAL acquireTokenSilent was successful')
+    } catch (err) {
+      // 2. Silent process might have failed so try via popup
+      tokenResp = await msalPublicClient.acquireTokenPopup(accessTokenRequest)
+      console.log('### MSAL acquireTokenPopup was successful')
+    }
+
+    // Just in case check, probably never triggers
+    if (!tokenResp.accessToken) {
+      throw new Error("### accessToken not found in response, that's bad")
+    }
+
+    return tokenResp.accessToken
+  }
+
   // getters
   const accountsDetails: ComputedRef<Account[]> = computed(() => accounts.value.map(toAccount))
   const accountDetails: ComputedRef<Account | undefined> = computed(() => selectedAccount.value ? toAccount(selectedAccount.value) : undefined)
@@ -66,6 +91,7 @@ export const useAccountsStore = defineStore('accounts', () => {
     login,
     logout,
     selectAccount,
+    acquireToken,
     accountsDetails,
     accountDetails,
     isAuthenticated

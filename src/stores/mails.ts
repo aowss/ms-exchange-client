@@ -3,17 +3,6 @@ import { defineStore } from 'pinia'
 import { getInbox } from '@/lib/graphHelper'
 import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
 import { useAccountsStore } from '@/stores/accounts'
-import {
-  type AccountInfo,
-  InteractionType,
-  type IPublicClientApplication,
-  PublicClientApplication
-} from '@azure/msal-browser'
-import {
-  AuthCodeMSALBrowserAuthenticationProvider
-} from '@microsoft/microsoft-graph-client/authProviders/authCodeMsalBrowser'
-import { msalPublicClient } from '@/lib/clients'
-import { appConfig } from '@/config'
 
 export interface Mail {
   id: string
@@ -40,28 +29,18 @@ const toMail = (page: PageCollection): Mail[] =>
 
 const accountsStore = useAccountsStore()
 
-export const getGraphClient = async (pca: PublicClientApplication, account: AccountInfo | undefined, graphScopes: string[]): Client => {
-  if (!account) await accountsStore.login()
-  const authProvider = new AuthCodeMSALBrowserAuthenticationProvider(pca, {
-    account: account || accountsStore.selectedAccount,
-    interactionType: InteractionType.Popup,
-    scopes: graphScopes
-  })
-
-  return Client.initWithMiddleware({ authProvider: authProvider })
-}
-
 export const useMailsStore = defineStore('mails', () => {
   console.log('useMailsStore')
+
   // state
-  const graphClient = getGraphClient(msalPublicClient, accountsStore.selectedAccount, appConfig.graphScopes)
   const mails: Ref<Mail[]> = ref([])
   const selectedMailId: Ref<string | undefined> = ref()
   const filter: Ref<string | undefined> = ref()
 
   // actions
   const getMail = async () => {
-    const result = await getInbox().then(toMail)
+    const accessToken = await accountsStore.acquireToken()
+    const result = await getInbox(accessToken).then(toMail)
     if (result) {
       mails.value = result
       selectedMailId.value = mails.value[0].id

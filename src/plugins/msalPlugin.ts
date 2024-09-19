@@ -75,7 +75,7 @@ export const msalPlugin = {
         }
       }
 
-      const status = EventMessageUtils.getInteractionStatusFromEvent(message, state.inProgress)
+      // const status = EventMessageUtils.getInteractionStatusFromEvent(message, state.inProgress)
       /*
             if (status !== null) {
                 //  TODO: check this
