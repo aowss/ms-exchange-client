@@ -6,9 +6,10 @@ import { InteractionType, PublicClientApplication } from '@azure/msal-browser'
 import { AuthCodeMSALBrowserAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/authCodeMsalBrowser'
 import { appConfig } from '@/config'
 
-const URL_USER = '/me'
+const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
+const URL_USER = 'me'
 const URL_SEND_MAIL = 'me/sendMail'
-const URL_INBOX_MESSAGES = '/me/mailFolders/inbox/messages'
+const URL_INBOX_MESSAGES = 'me/mailFolders/inbox/messages'
 
 export const sendMail = async (graphClient: Client, subject: string, body: string, recipients: string[]) => {
   if (!graphClient) throw new Error('Graph has not been initialized for user auth')
@@ -61,7 +62,7 @@ export const getInbox = async (
 async function callAPI(name: string, URL: string, method: string, accessToken: string, body?: object) {
   // try {
     const response = await fetch(
-      URL,
+      `${GRAPH_URL}/${URL}`,
       {
         method: method,
         body: body ? JSON.stringify(body) : null,

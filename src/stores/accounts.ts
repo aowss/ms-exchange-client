@@ -17,7 +17,7 @@ const toAccount = (info: AccountInfo): Account => ({
 
 export const useAccountsStore = defineStore('accounts', () => {
   // state
-  const accounts: Ref<AccountInfo[]> = ref(msalPublicClient.getAllAccounts())
+  const accounts: Ref<AccountInfo[]> = ref([])
   const selectedAccount: Ref<AccountInfo | undefined> = ref()
 
   // actions
@@ -26,6 +26,9 @@ export const useAccountsStore = defineStore('accounts', () => {
     msalPublicClient
       .loginPopup(request)
       .then((result: AuthenticationResult) => {
+        console.log('result', result)
+        console.log('accounts', msalPublicClient.getAllAccounts())
+        accounts.value = msalPublicClient.getAllAccounts()
         msalPublicClient.setActiveAccount(result.account)
         selectedAccount.value = result.account
         console.log(`login success: ${JSON.stringify(selectedAccount.value)}`)
@@ -39,7 +42,10 @@ export const useAccountsStore = defineStore('accounts', () => {
   const logout = async (): Promise<void> => {
     msalPublicClient
       .logoutPopup({ mainWindowRedirectUri: msalConfig.auth.postLogoutRedirectUri || undefined })
-      .then(selectedAccount.value = undefined)
+      .then(() => {
+        selectedAccount.value = undefined
+        accounts.value = []
+      })
       .catch(err => {
         console.error('logout failure', err)
         throw err
