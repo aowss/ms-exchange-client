@@ -22,7 +22,10 @@ export const useAccountsStore = defineStore('accounts', () => {
 
   // actions
   const login = async (): Promise<void> => {
-    const request: PopupRequest = { redirectUri: msalConfig.auth.redirectUri, scopes: appConfig.loginScopes }
+    const request: PopupRequest = {
+      redirectUri: msalConfig.auth.redirectUri,
+      scopes: appConfig.loginScopes
+    }
     msalPublicClient
       .loginPopup(request)
       .then((result: AuthenticationResult) => {
@@ -33,7 +36,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         selectedAccount.value = result.account
         console.log(`login success: ${JSON.stringify(selectedAccount.value)}`)
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('login failure', err)
         throw err
       })
@@ -46,7 +49,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         selectedAccount.value = undefined
         accounts.value = []
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('logout failure', err)
         throw err
       })
@@ -88,7 +91,9 @@ export const useAccountsStore = defineStore('accounts', () => {
 
   // getters
   const accountsDetails: ComputedRef<Account[]> = computed(() => accounts.value.map(toAccount))
-  const accountDetails: ComputedRef<Account | undefined> = computed(() => selectedAccount.value ? toAccount(selectedAccount.value) : undefined)
+  const accountDetails: ComputedRef<Account | undefined> = computed(() =>
+    selectedAccount.value ? toAccount(selectedAccount.value) : undefined
+  )
   const isAuthenticated: ComputedRef<boolean> = computed(() => !!selectedAccount.value)
 
   return {

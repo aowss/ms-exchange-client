@@ -1,17 +1,18 @@
 import 'isomorphic-fetch'
 import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
-import { msalPublicClient } from '@/lib/clients'
 import type { Message, User } from '@microsoft/microsoft-graph-types'
-import { InteractionType, PublicClientApplication } from '@azure/msal-browser'
-import { AuthCodeMSALBrowserAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/authCodeMsalBrowser'
-import { appConfig } from '@/config'
 
 const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
 const URL_USER = 'me'
 const URL_SEND_MAIL = 'me/sendMail'
 const URL_INBOX_MESSAGES = 'me/mailFolders/inbox/messages'
 
-export const sendMail = async (graphClient: Client, subject: string, body: string, recipients: string[]) => {
+export const sendMail = async (
+  graphClient: Client,
+  subject: string,
+  body: string,
+  recipients: string[]
+) => {
   if (!graphClient) throw new Error('Graph has not been initialized for user auth')
   if (!subject || subject.trim().length === 0) throw new Error('Subject is mandatory')
   if (!body || body.trim().length === 0) throw new Error('Body is mandatory')
@@ -50,37 +51,29 @@ export const getInbox = async (
   properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'],
   limit: number = 25
 ): Promise<PageCollection> => {
-
-  return callAPI(
-    'List messages',
-    URL_INBOX_MESSAGES,
-    'GET',
-    accessToken
-  )
+  return callAPI('List messages', URL_INBOX_MESSAGES, 'GET', accessToken)
 }
 
-async function callAPI(name: string, URL: string, method: string, accessToken: string, body?: object) {
-  // try {
-    const response = await fetch(
-      `${GRAPH_URL}/${URL}`,
-      {
-        method: method,
-        body: body ? JSON.stringify(body) : null,
-        headers: {
-          authorization: `bearer ${accessToken}`
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Error while calling ${name}: status: ${response.status}`);
+async function callAPI(
+  name: string,
+  URL: string,
+  method: string,
+  accessToken: string,
+  body?: object
+) {
+  const response = await fetch(`${GRAPH_URL}/${URL}`, {
+    method: method,
+    body: body ? JSON.stringify(body) : null,
+    headers: {
+      authorization: `bearer ${accessToken}`
     }
+  })
 
-    const json = await response.json();
-    console.log(json);
-    return json
-  // } catch (error: Error) {
-  //   console.error(error.message);
-  // }
+  if (!response.ok) {
+    throw new Error(`Error while calling ${name}: status: ${response.status}`)
+  }
+
+  const json = await response.json()
+  console.log(json)
+  return json
 }
-

@@ -1,7 +1,7 @@
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getInbox } from '@/lib/graphHelper'
-import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
+import { type PageCollection } from '@microsoft/microsoft-graph-client'
 import { useAccountsStore } from '@/stores/accounts'
 
 export interface Mail {

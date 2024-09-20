@@ -1,4 +1,9 @@
-import { createRouter, createWebHistory, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory,
+  type NavigationGuardNext,
+  type RouteLocationNormalized
+} from 'vue-router'
 import Failed from '@/views/Failed.vue'
 // import Mail from '@/components/mail/Mail.vue'
 import Home from '@/views/Home.vue'
@@ -15,7 +20,7 @@ const router = createRouter({
     {
       path: '/mail',
       name: 'mail',
-      component: () => import('@/components/mail/Mail.vue'),
+      component: () => import('@/components/mail/MailView.vue'),
       meta: {
         requiresAuth: true
       }
@@ -32,13 +37,17 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  const accountsStore = useAccountsStore()
-  console.log(`${from.fullPath} -> ${to.fullPath} ${to.meta?.requiresAuth ? 'requires authentication' : 'does not require authentication'}`)
+router.beforeEach(
+  async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+    const accountsStore = useAccountsStore()
+    console.log(
+      `${from.fullPath} -> ${to.fullPath} ${to.meta?.requiresAuth ? 'requires authentication' : 'does not require authentication'}`
+    )
 
-  if (!to.meta?.requiresAuth) next()
-  else if (accountsStore.isAuthenticated) next()
-  else next('/failed')
-})
+    if (!to.meta?.requiresAuth) next()
+    else if (accountsStore.isAuthenticated) next()
+    else next('/failed')
+  }
+)
 
 export default router
