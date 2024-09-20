@@ -40,6 +40,7 @@ export const useMailsStore = defineStore('mails', () => {
   // actions
   const getMail = async () => {
     const accessToken = await accountsStore.acquireToken()
+    console.log('accessToken', accessToken)
     const result = await getInbox(accessToken).then(toMail)
     if (result) {
       mails.value = result

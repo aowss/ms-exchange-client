@@ -28,7 +28,7 @@ export const useAccountsStore = defineStore('accounts', () => {
       .then((result: AuthenticationResult) => {
         msalPublicClient.setActiveAccount(result.account)
         selectedAccount.value = result.account
-        console.log(`login success: ${selectedAccount.value}`)
+        console.log(`login success: ${JSON.stringify(selectedAccount.value)}`)
       })
       .catch(err => {
         console.error('login failure', err)

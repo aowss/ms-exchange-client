@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import WelcomeName from '@/components/WelcomeName.vue'
 import { useAccountsStore } from '@/stores/accounts'
+import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 
 const accountsStore = useAccountsStore()
-const isAuthenticated = accountsStore.isAuthenticated
+const { isAuthenticated } = storeToRefs(accountsStore)
 
 const loginPopup = () => accountsStore.login()
 const logoutPopup = () => accountsStore.logout()
