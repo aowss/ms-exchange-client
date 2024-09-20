@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router'
 import Failed from '@/views/Failed.vue'
-import Mail from '@/components/mail/Mail.vue'
+// import Mail from '@/components/mail/Mail.vue'
 import Home from '@/views/Home.vue'
 import { useAccountsStore } from '@/stores/accounts'
 
