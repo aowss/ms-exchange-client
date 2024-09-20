@@ -15,8 +15,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@azure/identity": "^4.4.1",
-    "@azure/msal-browser": "^3.20.0",
+    "@azure/msal-browser": "^3.23.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@radix-icons/vue": "^1.0.0",
     "class-variance-authority": "^0.7.0",
@@ -27,7 +26,6 @@
     "lucide-vue-next": "^0.424.0",
     "pinia": "^2.1.7",
     "radix-vue": "^1.9.2",
-    "readline-sync": "^1.4.10",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
     "vue": "^3.4.29",
@@ -42,7 +40,6 @@
     "@types/isomorphic-fetch": "^0.0.39",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^20.14.14",
-    "@types/readline-sync": "^1.4.8",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/eslint-config-prettier": "^9.0.0",
     "@vue/eslint-config-typescript": "^13.0.0",

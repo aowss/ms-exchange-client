@@ -1,7 +1,8 @@
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getInbox } from '@/lib/graphHelper'
-import type { PageCollection } from '@microsoft/microsoft-graph-client'
+import { type PageCollection } from '@microsoft/microsoft-graph-client'
+import { useAccountsStore } from '@/stores/accounts'
 
 export interface Mail {
   id: string
@@ -26,16 +27,21 @@ const toMail = (page: PageCollection): Mail[] =>
     labels: mail.categories
   }))
 
+const accountsStore = useAccountsStore()
+
 export const useMailsStore = defineStore('mails', () => {
   console.log('useMailsStore')
+
   // state
   const mails: Ref<Mail[]> = ref([])
-  const selectedMailId: Ref<string> = ref()
-  const filter: Ref<string> = ref()
+  const selectedMailId: Ref<string | undefined> = ref()
+  const filter: Ref<string | undefined> = ref()
 
   // actions
   const getMail = async () => {
-    const result = await getInbox().then(toMail)
+    const accessToken = await accountsStore.acquireToken()
+    console.log('accessToken', accessToken)
+    const result = await getInbox(accessToken).then(toMail)
     if (result) {
       mails.value = result
       selectedMailId.value = mails.value[0].id
@@ -61,11 +67,11 @@ export const useMailsStore = defineStore('mails', () => {
     if (!filter.value || filter.value.trim().length === 0) return mails.value
     return mails.value.filter(
       (item) =>
-        item.name.includes(filter.value) ||
-        item.email.includes(filter.value) ||
-        item.name.includes(filter.value) ||
-        item.subject.includes(filter.value) ||
-        item.text.includes(filter.value)
+        item.name.includes(<string>filter.value) ||
+        item.email.includes(<string>filter.value) ||
+        item.name.includes(<string>filter.value) ||
+        item.subject.includes(<string>filter.value) ||
+        item.text.includes(<string>filter.value)
     )
   })
   const unreadMailList: ComputedRef<Mail[]> = computed(() =>
