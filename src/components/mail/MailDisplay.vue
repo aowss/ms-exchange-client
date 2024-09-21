@@ -9,12 +9,11 @@ import {
   ReplyAll,
   Trash2
 } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import addDays from 'date-fns/addDays'
 import addHours from 'date-fns/addHours'
 import format from 'date-fns/format'
 import nextSaturday from 'date-fns/nextSaturday'
-import type { Mail } from '../data/mails'
 import { Calendar } from '@/lib/registry/new-york/ui/calendar'
 import {
   DropdownMenu,
@@ -30,6 +29,7 @@ import { Separator } from '@/lib/registry/new-york/ui/separator'
 import { Switch } from '@/lib/registry/new-york/ui/switch'
 import { Textarea } from '@/lib/registry/new-york/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/lib/registry/new-york/ui/tooltip'
+import { type Mail, useMailsStore } from '@/stores/mails'
 
 interface MailDisplayProps {
   mail: Mail | undefined
@@ -45,6 +45,15 @@ const mailFallbackName = computed(() => {
 })
 
 const today = new Date()
+
+const mailsStore = useMailsStore()
+
+const replyMessage = ref('')
+
+const replyToMail = () => {
+  console.log(`reply to email: ${replyMessage.value}`)
+  mailsStore.reply(replyMessage.value)
+}
 </script>
 
 <template>
@@ -198,19 +207,21 @@ const today = new Date()
         </div>
       </div>
       <Separator />
-      <div class="flex-1 whitespace-pre-wrap p-4 text-sm">
-        {{ mail.text }}
-      </div>
+      <div class="flex-1 whitespace-pre-wrap p-4 text-sm" v-html="mail.text" />
       <Separator class="mt-auto" />
       <div class="p-4">
         <form>
           <div class="grid gap-4">
-            <Textarea class="p-4" :placeholder="`Reply ${mail.name}...`" />
+            <Textarea
+              class="p-4"
+              :placeholder="`Reply ${mail.name}...`"
+              v-model:modelValue="replyMessage"
+            />
             <div class="flex items-center">
               <Label html-for="mute" class="flex items-center gap-2 text-xs font-normal">
                 <Switch id="mute" aria-label="Mute thread" /> Mute this thread
               </Label>
-              <Button type="button" size="sm" class="ml-auto"> Send </Button>
+              <Button type="button" size="sm" class="ml-auto" @click="replyToMail"> Send </Button>
             </div>
           </div>
         </form>

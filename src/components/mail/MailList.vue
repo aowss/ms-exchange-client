@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { formatDistanceToNow } from 'date-fns'
-import type { Mail } from '../data/mails'
 import { ScrollArea } from '@/lib/registry/new-york/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/lib/registry/new-york/ui/badge'
+import type { Mail } from '@/stores/mails'
 
 interface MailListProps {
   items: Mail[]
@@ -60,9 +60,10 @@ function getBadgeVariantFromLabel(label: string) {
               {{ item.subject }}
             </div>
           </div>
-          <div class="line-clamp-2 text-xs text-muted-foreground">
-            {{ item.text.substring(0, 300) }}
-          </div>
+          <div
+            class="line-clamp-2 text-xs text-muted-foreground"
+            v-html="item.text.substring(0, 300)"
+          />
           <div class="flex items-center gap-2">
             <Badge
               v-for="label of item.labels"

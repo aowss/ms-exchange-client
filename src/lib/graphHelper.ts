@@ -1,11 +1,13 @@
 import 'isomorphic-fetch'
 import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
 import type { Message, User } from '@microsoft/microsoft-graph-types'
+import type { EMailAddress } from '@/stores/mails'
 
 const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
 const URL_USER = 'me'
 const URL_SEND_MAIL = 'me/sendMail'
 const URL_INBOX_MESSAGES = 'me/mailFolders/inbox/messages'
+const URL_REPLY = 'me/messages/{id}/reply'
 
 export const sendMail = async (
   graphClient: Client,
@@ -54,6 +56,24 @@ export const getInbox = async (
   return callAPI('List messages', URL_INBOX_MESSAGES, 'GET', accessToken)
 }
 
+export const replyToMail = async (
+  accessToken: string,
+  id: string,
+  body: string,
+  recipients: EMailAddress[]
+) => {
+  if (!body || body.trim().length === 0) throw new Error('Body is mandatory')
+
+  const reply = {
+    message: {
+      toRecipients: recipients
+    },
+    comment: body
+  }
+
+  return callAPI('Reply', URL_REPLY.replace('{id}', id), 'POST', accessToken, reply)
+}
+
 async function callAPI(
   name: string,
   URL: string,
@@ -65,7 +85,8 @@ async function callAPI(
     method: method,
     body: body ? JSON.stringify(body) : null,
     headers: {
-      authorization: `bearer ${accessToken}`
+      authorization: `bearer ${accessToken}`,
+      'Content-Type': 'application/json'
     }
   })
 
