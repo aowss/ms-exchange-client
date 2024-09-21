@@ -60,9 +60,7 @@ function getBadgeVariantFromLabel(label: string) {
               {{ item.subject }}
             </div>
           </div>
-          <div class="line-clamp-2 text-xs text-muted-foreground">
-            {{ item.text.substring(0, 300) }}
-          </div>
+          <div class="line-clamp-2 text-xs text-muted-foreground" v-html="item.text.substring(0, 300)"/>
           <div class="flex items-center gap-2">
             <Badge
               v-for="label of item.labels"

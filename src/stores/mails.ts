@@ -4,6 +4,13 @@ import { getInbox, replyToMail } from '@/lib/graphHelper'
 import { type PageCollection } from '@microsoft/microsoft-graph-client'
 import { useAccountsStore } from '@/stores/accounts'
 
+export interface EMailAddress {
+  emailAddress: {
+    name: string
+    address: string
+  }
+}
+
 export interface Mail {
   id: string
   name: string
@@ -12,7 +19,9 @@ export interface Mail {
   text: string
   date: string
   read: boolean
-  labels: string[]
+  labels: string[],
+  replyTo: EMailAddress[],
+  from: EMailAddress,
 }
 
 const toMail = (page: PageCollection): Mail[] =>
@@ -24,7 +33,9 @@ const toMail = (page: PageCollection): Mail[] =>
     text: mail.body.content,
     date: mail.sentDateTime,
     read: mail.isRead,
-    labels: mail.categories
+    labels: mail.categories,
+    replyTo: mail.replyTo,
+    from: mail.from
   }))
 
 const accountsStore = useAccountsStore()
@@ -40,8 +51,12 @@ export const useMailsStore = defineStore('mails', () => {
   // actions
   const getMail = async () => {
     const accessToken = await accountsStore.acquireToken()
-    console.log('accessToken', accessToken)
-    const result = await getInbox(accessToken).then(toMail)
+    const result = await getInbox(accessToken).then((email) => {
+      console.log('email', JSON.stringify(email))
+      const result = toMail(email)
+      console.log('email after mapping', JSON.stringify(result))
+      return result
+    })
     if (result) {
       mails.value = result
       selectedMailId.value = mails.value[0].id
@@ -51,8 +66,12 @@ export const useMailsStore = defineStore('mails', () => {
 
   const reply = async (body: string) => {
     const accessToken = await accountsStore.acquireToken()
-    console.log('accessToken', accessToken)
-    return replyToMail(accessToken, selectedMail.value.id, body, [selectedMail.value.email])
+    // const messageId = selectedMail.value.id.substring(1, selectedMail.value.id.length - 1)
+    const messageId = selectedMail.value.id
+    console.log('replyTo', selectedMail.value.replyTo)
+    // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
+    const recipients = selectedMail.value.replyTo && selectedMail.value.replyTo.length !== 0 ? selectedMail.value.replyTo : [selectedMail.value.from]
+    return replyToMail(accessToken, messageId, body, recipients)
   }
 
   const filterMailList = (search: string | undefined): Mail[] => {
@@ -69,6 +88,7 @@ export const useMailsStore = defineStore('mails', () => {
   const selectedMail: ComputedRef<Mail> = computed(
     () => mails.value.find((mail) => mail.id === selectedMailId.value) || mails.value[0]
   )
+
   const filteredMailList: ComputedRef<Mail[]> = computed(() => {
     if (!filter.value || filter.value.trim().length === 0) return mails.value
     return mails.value.filter(
@@ -80,6 +100,7 @@ export const useMailsStore = defineStore('mails', () => {
         item.text.includes(<string>filter.value)
     )
   })
+
   const unreadMailList: ComputedRef<Mail[]> = computed(() =>
     filteredMailList.value.filter((item) => !item.read)
   )
@@ -89,6 +110,7 @@ export const useMailsStore = defineStore('mails', () => {
     selectedMailId,
     filter,
     getMail,
+    reply,
     selectMail,
     filterMailList,
     selectedMail,

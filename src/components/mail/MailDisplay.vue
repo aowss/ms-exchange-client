@@ -36,7 +36,8 @@ const mailsStore = useMailsStore()
 
 const replyMessage = ref('')
 
-const reply = () => {
+const replyToMail = () => {
+  console.log(`reply to email: ${replyMessage.value}`)
   mailsStore.reply(replyMessage.value)
 }
 </script>
@@ -206,9 +207,7 @@ const reply = () => {
         </div>
       </div>
       <Separator />
-      <div class="flex-1 whitespace-pre-wrap p-4 text-sm">
-        {{ mail.text }}
-      </div>
+      <div class="flex-1 whitespace-pre-wrap p-4 text-sm" v-html="mail.text"/>
       <Separator class="mt-auto" />
       <div class="p-4">
         <form>
@@ -216,6 +215,7 @@ const reply = () => {
             <Textarea
               class="p-4"
               :placeholder="`Reply ${mail.name}...`"
+              v-model:modelValue="replyMessage"
             />
             <div class="flex items-center">
               <Label
@@ -229,6 +229,7 @@ const reply = () => {
                 type="button"
                 size="sm"
                 class="ml-auto"
+                @click="replyToMail"
               >
                 Send
               </Button>
