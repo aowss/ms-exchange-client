@@ -19,9 +19,9 @@ export interface Mail {
   text: string
   date: string
   read: boolean
-  labels: string[],
-  replyTo: EMailAddress[],
-  from: EMailAddress,
+  labels: string[]
+  replyTo: EMailAddress[]
+  from: EMailAddress
 }
 
 const toMail = (page: PageCollection): Mail[] =>
@@ -70,7 +70,10 @@ export const useMailsStore = defineStore('mails', () => {
     const messageId = selectedMail.value.id
     console.log('replyTo', selectedMail.value.replyTo)
     // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
-    const recipients = selectedMail.value.replyTo && selectedMail.value.replyTo.length !== 0 ? selectedMail.value.replyTo : [selectedMail.value.from]
+    const recipients =
+      selectedMail.value.replyTo && selectedMail.value.replyTo.length !== 0
+        ? selectedMail.value.replyTo
+        : [selectedMail.value.from]
     return replyToMail(accessToken, messageId, body, recipients)
   }
 

@@ -56,15 +56,20 @@ export const getInbox = async (
   return callAPI('List messages', URL_INBOX_MESSAGES, 'GET', accessToken)
 }
 
-export const replyToMail = async (accessToken: string, id: string, body: string, recipients: EMailAddress[]) => {
-  if (!body || body.trim().length === 0) throw new Error("Body is mandatory")
+export const replyToMail = async (
+  accessToken: string,
+  id: string,
+  body: string,
+  recipients: EMailAddress[]
+) => {
+  if (!body || body.trim().length === 0) throw new Error('Body is mandatory')
 
   const reply = {
     message: {
       toRecipients: recipients
     },
     comment: body
-  };
+  }
 
   return callAPI('Reply', URL_REPLY.replace('{id}', id), 'POST', accessToken, reply)
 }

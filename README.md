@@ -27,7 +27,7 @@ Since the [MSAL.js + Vue 3 + TypeScript Sample](https://github.com/AzureAD/micro
 
 # To Do
 
-* Get rid of the `element-plus` and use [`shadcn-vue`](https://www.shadcn-vue.com/) instead
+* Get rid of `element-plus` and use [`shadcn-vue`](https://www.shadcn-vue.com/) instead.
 
 # Setup
 
@@ -76,7 +76,6 @@ Create a `.env` file at the root of the project and specify the following variab
 ```dotenv
 VITE_MSAL_CLIENT_ID=
 VITE_MSAL_TENANT_ID=
-VITE_SECRET_ID=
 ```
 
 The meaning of those environment variables is explained [here](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app#configuration).
@@ -122,4 +121,10 @@ npm run test:e2e -- --debug
 
 ```sh
 npm run lint
+```
+
+## Format with [Prettier](https://prettier.io/)
+
+```sh
+npm run format
 ```
