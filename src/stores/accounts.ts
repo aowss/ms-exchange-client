@@ -24,7 +24,7 @@ export const useAccountsStore = defineStore('accounts', () => {
   const login = async (): Promise<void> => {
     const request: PopupRequest = {
       redirectUri: msalConfig.auth.redirectUri,
-      scopes: appConfig.loginScopes
+      scopes: appConfig.graphScopes
     }
     msalPublicClient
       .loginPopup(request)

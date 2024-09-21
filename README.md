@@ -1,5 +1,5 @@
 <!-- TOC -->
-* [To Do](#to-do)
+* [Overview](#overview)
 * [Setup](#setup)
   * [Recommended IDE Setup](#recommended-ide-setup)
   * [Type Support for `.vue` Imports in TS](#type-support-for-vue-imports-in-ts)
@@ -12,7 +12,11 @@
   * [Run Unit Tests with Vitest](#run-unit-tests-with-vitest)
   * [Run End-to-End Tests with Playwright](#run-end-to-end-tests-with-playwright)
   * [Lint with ESLint](#lint-with-eslint)
+  * [Format with Prettier](#format-with-prettier)
+* [To Do](#to-do)
 <!-- TOC -->
+
+# Overview
 
 Building an MS Exchange email client using:
 * [`shadcn-vue`](https://www.shadcn-vue.com/)
@@ -25,10 +29,6 @@ Since the [Microsoft Graph JavaScript Client Library](https://github.com/microso
 
 Since the [MSAL.js + Vue 3 + TypeScript Sample](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app) is complicated, the authentication aspect is based on Dave Stewart's article: [A guide to MSAL authentication in Vue](https://davestewart.co.uk/blog/msal-vue/).
 
-# To Do
-
-* Get rid of `element-plus` and use [`shadcn-vue`](https://www.shadcn-vue.com/) instead.
-
 # Setup
 
 We follow the [Vite installation instructions for `shadcn-vue`](https://www.shadcn-vue.com/docs/installation/vite.html).
@@ -37,7 +37,7 @@ We follow the [Vite installation instructions for `shadcn-vue`](https://www.shad
 
 This will use [Vite](https://vitejs.dev/) as the build tool and development environment.
 
-![](Scaffolding.png)
+![](docs/Scaffolding.png)
 
 * Add [Tailwind](https://tailwindcss.com/) and its configuration
 * Edit `tsconfig.json`
@@ -45,7 +45,7 @@ This will use [Vite](https://vitejs.dev/) as the build tool and development envi
 * Delete default Vite styles
 * Set up the project to use `shadcn-vue`:
 
-![](Setup.png)
+![](docs/Setup.png)
 
 * Update `main.ts` to use Tailwind styles
 
@@ -128,3 +128,14 @@ npm run lint
 ```sh
 npm run format
 ```
+
+# To Do
+
+* Fix the `Reply` issue:
+
+![](docs/Delivery Failure.png)
+
+This seems to be due to the usage of a trial teanant as explained [here](https://answers.microsoft.com/en-us/outlook_com/forum/all/unable-to-send-email-access-denied-traffic-not/42df27fb-f2fe-447a-9c2a-ebe897c0fe17).
+
+* Add [Husky hooks](https://typicode.github.io/husky/)
+* Get rid of `element-plus` and use [`shadcn-vue`](https://www.shadcn-vue.com/) instead.
