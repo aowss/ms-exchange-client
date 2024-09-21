@@ -1,20 +1,18 @@
 import { type Configuration, LogLevel } from '@azure/msal-browser'
 
 export interface AppConfiguration {
-  clientId: string;
-  tenantId: string;
-  scopes: string[];
+  clientId: string
+  tenantId: string
+  loginScopes: string[]
+  graphScopes: string[]
 }
 
 export const appConfig: AppConfiguration = {
   clientId: import.meta.env.VITE_MSAL_CLIENT_ID,
   tenantId: import.meta.env.VITE_MSAL_TENANT_ID,
-  scopes: [
-    'user.read',
-    'mail.read',
-    // 'mail.send'
-  ]
-};
+  loginScopes: ['user.read'],
+  graphScopes: ['user.read', 'mail.read', 'mail.send']
+}
 
 export const msalConfig: Configuration = {
   auth: {
@@ -30,26 +28,26 @@ export const msalConfig: Configuration = {
     loggerOptions: {
       loggerCallback: (level: LogLevel, message: string, containsPii: boolean) => {
         if (containsPii) {
-          return;
+          return
         }
         switch (level) {
           case LogLevel.Error:
-            console.error(message);
-            return;
+            console.error(message)
+            return
           case LogLevel.Info:
-            console.info(message);
-            return;
+            console.info(message)
+            return
           case LogLevel.Verbose:
-            console.debug(message);
-            return;
+            console.debug(message)
+            return
           case LogLevel.Warning:
-            console.warn(message);
-            return;
+            console.warn(message)
+            return
           default:
-            return;
+            return
         }
       },
       logLevel: LogLevel.Verbose
     }
   }
-};
+}

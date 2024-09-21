@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { Archive, ArchiveX, Clock, Forward, MoreVertical, Reply, ReplyAll, Trash2 } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import addDays from 'date-fns/addDays'
 import addHours from 'date-fns/addHours'
 import format from 'date-fns/format'
@@ -26,7 +26,7 @@ const props = defineProps<MailDisplayProps>()
 const mailFallbackName = computed(() => {
   return props.mail?.name
     .split(' ')
-    .map(chunk => chunk[0])
+    .map((chunk) => chunk[0])
     .join('')
 })
 
@@ -216,7 +216,6 @@ const reply = () => {
             <Textarea
               class="p-4"
               :placeholder="`Reply ${mail.name}...`"
-              v-model="replyMessage"
             />
             <div class="flex items-center">
               <Label
@@ -230,7 +229,6 @@ const reply = () => {
                 type="button"
                 size="sm"
                 class="ml-auto"
-                @click="reply"
               >
                 Send
               </Button>

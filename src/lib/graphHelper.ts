@@ -1,46 +1,28 @@
-import 'isomorphic-fetch';
+import 'isomorphic-fetch'
 import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
-import { msalPublicClient } from '@/lib/clients'
 import type { Message, User } from '@microsoft/microsoft-graph-types'
-import { InteractionType, PublicClientApplication } from '@azure/msal-browser'
-import {
-  AuthCodeMSALBrowserAuthenticationProvider
-} from '@microsoft/microsoft-graph-client/authProviders/authCodeMsalBrowser'
-import { appConfig } from '@/config/config'
 
-const URL_USER = '/me'
-const URL_SEND_MAIL = '/me/sendMail'
-// const URL_REPLY_MAIL = '/me/sendMail'
-const URL_INBOX_MESSAGES = '/me/mailFolders/inbox/messages'
+const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
+const URL_USER = 'me'
+const URL_SEND_MAIL = 'me/sendMail'
+const URL_INBOX_MESSAGES = 'me/mailFolders/inbox/messages'
+const URL_REPLY = 'me/messages/{id}/reply'
 
-export const getGraphClient = async (pca: PublicClientApplication, graphScopes: string[]) => {
-  console.log("getGraphClient", pca, graphScopes)
-  await pca.initialize()
-  // Authenticate to get the user's account
-  const authResult = await pca.acquireTokenPopup({
-    scopes: ['User.Read'],
-  });
-
-  if (!authResult.account) {
-    throw new Error('Could not authenticate');
-  }
-
-  const authProvider = new AuthCodeMSALBrowserAuthenticationProvider(pca, {
-    account: authResult.account,
-    interactionType: InteractionType.Popup,
-    scopes: graphScopes,
-  });
-
-  return Client.initWithMiddleware({ authProvider: authProvider })
-}
-
-const graphClient = await getGraphClient(msalPublicClient, appConfig.scopes)
-
-export const sendMail = async (subject: string, body: string, recipients: string[]) => {
-  if (!graphClient) throw new Error('Graph has not been initialized for user auth');
-  if (!subject || subject.trim().length === 0) throw new Error("Subject is mandatory")
-  if (!body || body.trim().length === 0) throw new Error("Body is mandatory")
-  if (!recipients || recipients.length === 0 || recipients.filter(recipient => recipient.trim().length !== 0).length === 0) throw new Error("At least one recipient is mandatory")
+export const sendMail = async (
+  graphClient: Client,
+  subject: string,
+  body: string,
+  recipients: string[]
+) => {
+  if (!graphClient) throw new Error('Graph has not been initialized for user auth')
+  if (!subject || subject.trim().length === 0) throw new Error('Subject is mandatory')
+  if (!body || body.trim().length === 0) throw new Error('Body is mandatory')
+  if (
+    !recipients ||
+    recipients.length === 0 ||
+    recipients.filter((recipient) => recipient.trim().length !== 0).length === 0
+  )
+    throw new Error('At least one recipient is mandatory')
 
   const message: Message = {
     subject: subject,
@@ -49,17 +31,31 @@ export const sendMail = async (subject: string, body: string, recipients: string
       contentType: 'text'
     },
     toRecipients: recipients
-      .filter(recipient => recipient.trim().length !== 0)
-      .map(recipient => ({ emailAddress: { address: recipient } }))
-  };
+      .filter((recipient) => recipient.trim().length !== 0)
+      .map((recipient) => ({ emailAddress: { address: recipient } }))
+  }
 
-  return graphClient
-    .api(URL_SEND_MAIL)
-    .post({ message: message });
+  return graphClient.api(URL_SEND_MAIL).post({ message: message })
 }
 
-export const replyToMail = async (id: string, body: string, recipients: string[]) => {
-  if (!graphClient) throw new Error('Graph has not been initialized for user auth');
+export const getUser = async (
+  graphClient: Client,
+  properties: string[] = ['displayName', 'mail', 'userPrincipalName']
+): Promise<User> => {
+  if (!graphClient) throw new Error('Graph has not been initialized for user auth')
+
+  return graphClient.api(URL_USER).select(properties).get()
+}
+
+export const getInbox = async (
+  accessToken: string,
+  properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'],
+  limit: number = 25
+): Promise<PageCollection> => {
+  return callAPI('List messages', URL_INBOX_MESSAGES, 'GET', accessToken)
+}
+
+export const replyToMail = async (accessToken: string, id: string, body: string, recipients: string[]) => {
   if (!body || body.trim().length === 0) throw new Error("Body is mandatory")
 
   const reply = {
@@ -71,27 +67,29 @@ export const replyToMail = async (id: string, body: string, recipients: string[]
     comment: body
   };
 
-  return graphClient
-    .api(`/me/messages/${id}/reply`)
-    .post(reply);
+  return callAPI('Reply', URL_REPLY.replace('{id}', id), 'POST', accessToken, reply)
 }
 
-export const getUser = async(properties: string[] = ['displayName', 'mail', 'userPrincipalName']): Promise<User> => {
-  if (!graphClient) throw new Error('Graph has not been initialized for user auth');
+async function callAPI(
+  name: string,
+  URL: string,
+  method: string,
+  accessToken: string,
+  body?: object
+) {
+  const response = await fetch(`${GRAPH_URL}/${URL}`, {
+    method: method,
+    body: body ? JSON.stringify(body) : null,
+    headers: {
+      authorization: `bearer ${accessToken}`
+    }
+  })
 
-  return graphClient
-    .api(URL_USER)
-    .select(properties)
-    .get();
-}
+  if (!response.ok) {
+    throw new Error(`Error while calling ${name}: status: ${response.status}`)
+  }
 
-export const getInbox = async(properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'], limit: number = 25): Promise<PageCollection> => {
-  if (!graphClient) throw new Error('Graph has not been initialized for user auth');
-
-  return graphClient
-    .api(URL_INBOX_MESSAGES)
-    // .select(properties)
-    .top(limit)
-    .orderby('receivedDateTime DESC')
-    .get();
+  const json = await response.json()
+  console.log(json)
+  return json
 }
