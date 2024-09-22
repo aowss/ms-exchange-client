@@ -133,7 +133,7 @@ npm run format
 
 * Fix the `Reply` issue:
 
-![](docs/Delivery Failure.png)
+![](docs/Delivery-Failure.png)
 
 This seems to be due to the usage of a trial teanant as explained [here](https://answers.microsoft.com/en-us/outlook_com/forum/all/unable-to-send-email-access-denied-traffic-not/42df27fb-f2fe-447a-9c2a-ebe897c0fe17).
 
