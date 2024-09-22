@@ -7,6 +7,7 @@ const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
 const URL_USER = 'me'
 const URL_SEND_MAIL = 'me/sendMail'
 const URL_INBOX_MESSAGES = 'me/mailFolders/inbox/messages'
+const URL_MESSAGE = 'me/messages/{id}'
 const URL_REPLY = 'me/messages/{id}/reply'
 
 export const sendMail = async (
@@ -74,13 +75,16 @@ export const replyToMail = async (
   return callAPI('Reply', URL_REPLY.replace('{id}', id), 'POST', accessToken, reply)
 }
 
-async function callAPI(
+export const deleteMail = async (accessToken: string, id: string): Promise<void> =>
+  callAPI('Delete', URL_MESSAGE.replace('{id}', id), 'DELETE', accessToken)
+
+const callAPI = async (
   name: string,
   URL: string,
   method: string,
   accessToken: string,
   body?: object
-) {
+) => {
   const response = await fetch(`${GRAPH_URL}/${URL}`, {
     method: method,
     body: body ? JSON.stringify(body) : null,
@@ -94,7 +98,12 @@ async function callAPI(
     throw new Error(`Error while calling ${name}: status: ${response.status}`)
   }
 
-  const json = await response.json()
-  console.log(json)
-  return json
+  if (isJson(response)) {
+    const json = await response.json()
+    console.log(`${name} response [ status = ${response.status} ]: ${JSON.stringify(json)}`)
+    return json
+  }
 }
+
+const isJson = (response: Response) =>
+  response.headers.get('Content-Type')?.includes('application/json')

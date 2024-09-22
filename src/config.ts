@@ -7,11 +7,12 @@ export interface AppConfiguration {
   graphScopes: string[]
 }
 
+// See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/resources-and-scopes.md#dynamic-scopes-and-incremental-consent for details about static vs. dynamic scopes
 export const appConfig: AppConfiguration = {
   clientId: import.meta.env.VITE_MSAL_CLIENT_ID,
   tenantId: import.meta.env.VITE_MSAL_TENANT_ID,
-  loginScopes: ['user.read'],
-  graphScopes: ['user.read', 'mail.read', 'mail.send']
+  loginScopes: ['openid', 'profile', 'user.read'],
+  graphScopes: ['mail.read', 'mail.send', 'mail.readwrite']
 }
 
 export const msalConfig: Configuration = {

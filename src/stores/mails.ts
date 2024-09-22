@@ -1,6 +1,6 @@
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { getInbox, replyToMail } from '@/lib/graphHelper'
+import { deleteMail, getInbox, replyToMail } from '@/lib/graphHelper'
 import { type PageCollection } from '@microsoft/microsoft-graph-client'
 import { useAccountsStore } from '@/stores/accounts'
 
@@ -41,8 +41,6 @@ const toMail = (page: PageCollection): Mail[] =>
 const accountsStore = useAccountsStore()
 
 export const useMailsStore = defineStore('mails', () => {
-  console.log('useMailsStore')
-
   // state
   const mails: Ref<Mail[]> = ref([])
   const selectedMailId: Ref<string | undefined> = ref()
@@ -50,7 +48,7 @@ export const useMailsStore = defineStore('mails', () => {
 
   // actions
   const getMail = async () => {
-    const accessToken = await accountsStore.acquireToken()
+    const accessToken = await accountsStore.acquireToken(['mail.read'])
     const result = await getInbox(accessToken).then((email) => {
       console.log('email', JSON.stringify(email))
       const result = toMail(email)
@@ -65,16 +63,21 @@ export const useMailsStore = defineStore('mails', () => {
   }
 
   const reply = async (body: string) => {
-    const accessToken = await accountsStore.acquireToken()
-    // const messageId = selectedMail.value.id.substring(1, selectedMail.value.id.length - 1)
+    const accessToken = await accountsStore.acquireToken(['mail.send'])
     const messageId = selectedMail.value.id
-    console.log('replyTo', selectedMail.value.replyTo)
     // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
     const recipients =
       selectedMail.value.replyTo && selectedMail.value.replyTo.length !== 0
         ? selectedMail.value.replyTo
         : [selectedMail.value.from]
     return replyToMail(accessToken, messageId, body, recipients)
+  }
+
+  const deleteSelectedMail = async () => {
+    const accessToken = await accountsStore.acquireToken(['mail.readwrite'])
+    const messageId = selectedMail.value.id
+    await deleteMail(accessToken, messageId)
+    await getMail()
   }
 
   const filterMailList = (search: string | undefined): Mail[] => {
@@ -114,6 +117,7 @@ export const useMailsStore = defineStore('mails', () => {
     filter,
     getMail,
     reply,
+    deleteSelectedMail,
     selectMail,
     filterMailList,
     selectedMail,

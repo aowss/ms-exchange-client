@@ -50,6 +50,10 @@ const mailsStore = useMailsStore()
 
 const replyMessage = ref('')
 
+const deleteMail = () => {
+  mailsStore.deleteSelectedMail()
+}
+
 const replyToMail = () => {
   console.log(`reply to email: ${replyMessage.value}`)
   mailsStore.reply(replyMessage.value)
@@ -80,7 +84,7 @@ const replyToMail = () => {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger as-child>
-            <Button variant="ghost" size="icon" :disabled="!mail">
+            <Button variant="ghost" size="icon" :disabled="!mail" @click="deleteMail">
               <Trash2 class="size-4" />
               <span class="sr-only">Move to trash</span>
             </Button>
