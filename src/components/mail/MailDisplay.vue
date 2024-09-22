@@ -54,9 +54,10 @@ const deleteMail = () => {
   mailsStore.deleteSelectedMail()
 }
 
-const replyToMail = () => {
+const replyToMail = async () => {
   console.log(`reply to email: ${replyMessage.value}`)
-  mailsStore.reply(replyMessage.value)
+  await mailsStore.reply(replyMessage.value)
+  replyMessage.value = ''
 }
 </script>
 
