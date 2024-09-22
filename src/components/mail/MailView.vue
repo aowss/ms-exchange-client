@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Search } from 'lucide-vue-next'
 
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { refDebounced } from '@vueuse/core'
 
 import AccountSwitcher from './AccountSwitcher.vue'
@@ -23,8 +23,17 @@ import { useMailsStore } from '@/stores/mails'
 
 const accountsStore = useAccountsStore()
 const mailsStore = useMailsStore()
-//TODO: check if this the right approach
-mailsStore.getMail()
+
+// TODO: check if this the right approach ( https://vuejs.org/api/composition-api-lifecycle.html#onunmounted )
+let intervalId: any
+
+// Instantiate
+onMounted(async () => {
+  await mailsStore.getMail()
+  intervalId = setInterval(async () => await mailsStore.getMail(), 30000);
+});
+
+onUnmounted(() => clearInterval(intervalId))
 
 interface MailProps {
   defaultLayout?: number[]
