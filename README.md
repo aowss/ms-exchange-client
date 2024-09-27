@@ -29,6 +29,59 @@ Since the [Microsoft Graph JavaScript Client Library](https://github.com/microso
 
 Since the [MSAL.js + Vue 3 + TypeScript Sample](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/samples/msal-browser-samples/vue3-sample-app) is complicated, the authentication aspect is based on Dave Stewart's article: [A guide to MSAL authentication in Vue](https://davestewart.co.uk/blog/msal-vue/).
 
+```plantuml
+@startwbs
+<style>
+wbsDiagram {
+  .layout {
+    FontColor brown
+    LineColor white
+    BackgroundColor white
+  }
+  .store {
+    Padding 12
+    FontColor darkblue
+    LineColor darkblue
+    BackgroundColor LightYellow
+  }
+}
+</style>
+*[#white] App
+**[#pink] NavBar
+'**: Home
+'""/"";
+'** Failed \n""/failed""
+**[#pink]: MailView
+""/mail"";
+*** left column <<layout>>
+****[#pink](c1) AccountSwitcher
+****[#pink]: Nav
+""--> links"";
+****[#pink]: Nav
+""--> links2"";
+*** middle column <<layout>>
+****[#pink](c2) MailList \n //All mail//
+****[#pink](c3) MailList \n //Unread//
+*** right column <<layout>>
+****[#pink](c4) MailDisplay
+** Pinia Stores <<store>>
+*** accounts <<store>>
+****(s1) ""accountDetails"" <<store>>
+*** mails <<store>>
+****(s2) ""filterMailList"" <<store>>
+****(s3) ""unreadMailList"" <<store>>
+****(s4) ""selectMail"" <<store>>
+****(s5) ""deleteSelectedMail"" <<store>>
+****(s6) ""reply"" <<store>>
+s1 --> c1 #blue
+s2 --> c2 #blue
+s3 --> c3 #blue
+s4 --> c4 #blue
+c4 --> s5 #green
+c4 --> s6 #green
+@endwbs
+```
+
 # Setup
 
 We follow the [Vite installation instructions for `shadcn-vue`](https://www.shadcn-vue.com/docs/installation/vite.html).
