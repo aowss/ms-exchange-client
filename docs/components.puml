@@ -1,0 +1,55 @@
+@startwbs
+<style>
+wbsDiagram {
+  .component {
+    FontColor white
+    LineColor black
+    BackgroundColor black
+  }
+  .layout {
+    FontColor brown
+    LineColor white
+    BackgroundColor white
+  }
+  .store {
+    Padding 12
+    FontColor darkblue
+    LineColor darkblue
+    BackgroundColor LightYellow
+  }
+}
+</style>
+*[#white] App
+** NavBar <<component>>
+'**: Home
+'""/"";
+'** Failed \n""/failed""
+**: MailView
+""/mail""; <<component>>
+*** left column <<layout>>
+****(c1) AccountSwitcher \n\n <img:AccountSwitcher.png{scale=0.3}> <<component>>
+****: Nav
+""--> links""; <<component>>
+****: Nav
+""--> links2""; <<component>>
+*** middle column <<layout>>
+****(c2) MailList \n //All mail// \n\n <img:MailsList.png{scale=0.3}> <<component>>
+****(c3) MailList \n //Unread// \n\n <img:Unread.png{scale=0.3}> <<component>>
+*** right column <<layout>>
+****(c4) MailDisplay \n\n <img:Mail.png{scale=0.3}> <<component>>
+** Pinia Stores <<store>>
+*** accounts <<store>>
+****(s1) ""accountDetails"" <<store>>
+*** mails <<store>>
+****(s2) ""filterMailList"" <<store>>
+****(s3) ""unreadMailList"" <<store>>
+****(s4) ""selectMail"" <<store>>
+****(s5) ""deleteSelectedMail"" <<store>>
+****(s6) ""reply"" <<store>>
+s1 --> c1 #blue
+s2 --> c2 #blue
+s3 --> c3 #blue
+s4 --> c4 #blue
+c4 --> s5 #green
+c4 --> s6 #green
+@endwbs
