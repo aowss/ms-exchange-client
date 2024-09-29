@@ -27,9 +27,9 @@ wbsDiagram {
 **(c0) MailView \n ""/mail"" <<component>>
 *** left column <<layout>>
 ****(c1) AccountSwitcher \n\n <img:AccountSwitcher.png{scale=0.3}> <<component>>
-****: Nav
+****: MailNav
 ""--> links""; <<component>>
-****: Nav
+****: MailNav
 ""--> links2""; <<component>>
 *** middle column <<layout>>
 ****(c2) MailList \n //All mail// \n\n <img:MailsList.png{scale=0.3}> <<component>>
@@ -40,7 +40,7 @@ wbsDiagram {
 --- accounts <<store>>
 ----(s0) ""accountDetails"" <<store>>
 *** mails <<store>>
-****(s1) ""getMail"" <<store>>
+****(s1) ""getMessages"" <<store>>
 ****(s2) ""filterMailList"" <<store>>
 ****(s3) ""unreadMailList"" <<store>>
 ****(s4) ""selectMail"" <<store>>
