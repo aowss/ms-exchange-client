@@ -1,6 +1,6 @@
 import 'isomorphic-fetch'
 import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
-import type { Folder, Message, User } from '@microsoft/microsoft-graph-types'
+import type { Folder, MailFolder, Message, User } from '@microsoft/microsoft-graph-types'
 import type { EMailAddress } from '@/stores/mails'
 
 const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
@@ -59,8 +59,29 @@ export const getInbox = async (
   return callAPI('List Inbox messages', URL_INBOX_MESSAGES, 'GET', accessToken)
 }
 
+/**
+ * The key is the folder's id
+ */
 export interface GroupedMessages {
   [key: string]: Message[]
+}
+
+/**
+ * The key is the folder's display name
+ */
+export interface GroupedFolders {
+  [key: string]: MailFolder
+}
+
+export const listFolders = async(accessToken: string): Promise<GroupedFolders> => {
+  const folders = await callAPI('List folders', URL_FOLDERS, 'GET', accessToken)
+  const foldersByName = folders.value
+    .reduce((acc: GroupedFolders, folder: MailFolder) => {
+      const name = folder.displayName
+      if (name) acc[name] = folder
+      return acc
+    }, {})
+  return foldersByName
 }
 
 export const getFolders = async(accessToken: string): Promise<Folder> => {
@@ -75,11 +96,11 @@ export const listMessages = async (
 ): Promise<GroupedMessages> => {
   const messages = await callAPI('List messages', URL_MESSAGES, 'GET', accessToken)
   const messagesPerFolder = messages.value
-    .reduce((acc: GroupedMessages, value: Message) => {
-      const folder = value.parentFolderId
+    .reduce((acc: GroupedMessages, message: Message) => {
+      const folder = message.parentFolderId
       if (folder) {
         if (!acc[folder]) acc[folder] = []
-        acc[folder].push(value)
+        acc[folder].push(message)
       }
       return acc
     }, {})

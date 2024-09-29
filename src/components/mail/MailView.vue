@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import { Search } from 'lucide-vue-next'
 
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, type Reactive, type Ref, ref,reactive } from 'vue'
 import { refDebounced } from '@vueuse/core'
 
 import AccountSwitcher from './AccountSwitcher.vue'
 import MailList from './MailList.vue'
 import MailDisplay from './MailDisplay.vue'
-import Nav, { type LinkProp } from './MailNav.vue'
+import MailNav, { type LinkProp } from './MailNav.vue'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/lib/registry/new-york/ui/separator'
 import { Input } from '@/lib/registry/new-york/ui/input'
@@ -20,6 +20,7 @@ import {
 } from '@/lib/registry/new-york/ui/resizable'
 import { useAccountsStore } from '@/stores/accounts'
 import { useMailsStore } from '@/stores/mails'
+import type { GroupedFolders } from '@/lib/graphHelper'
 
 const accountsStore = useAccountsStore()
 const mailsStore = useMailsStore()
@@ -27,13 +28,23 @@ const mailsStore = useMailsStore()
 // TODO: check if this the right approach ( https://vuejs.org/api/composition-api-lifecycle.html#onunmounted )
 let intervalId: any
 
-// Instantiate
-onMounted(async () => {
+const refresh = async() => {
+  await mailsStore.getGroupedMailFolders()
   await mailsStore.getMail()
-  intervalId = setInterval(async () => await mailsStore.getMail(), 30000);
+  // await mailsStore.getMessages()
+}
+
+onMounted(async () => {
+  console.log('onMounted')
+  await refresh()
+  console.log('refresh done')
+  intervalId = setInterval(async () => await refresh(), 30000);
 });
 
 onUnmounted(() => clearInterval(intervalId))
+
+//  TODO:
+const folders: Reactive<GroupedFolders> = reactive(mailsStore.mailFolders)
 
 interface MailProps {
   defaultLayout?: number[]
@@ -51,40 +62,42 @@ const selectedMail = ref<string>()
 const searchValue = ref('')
 const debouncedSearch = refDebounced(searchValue, 250)
 
+const getCounts = (name: string): string => folders[name] ? `${folders[name].unreadItemCount} / ${folders[name].totalItemCount}` : ''
+
 const links: LinkProp[] = [
   {
     title: 'Inbox',
-    label: '128',
+    label: getCounts('Inbox'),
     icon: 'lucide:inbox',
     variant: 'default'
   },
   {
     title: 'Drafts',
-    label: '9',
+    label: getCounts('Drafts'),
     icon: 'lucide:file',
     variant: 'ghost'
   },
   {
     title: 'Sent',
-    label: '',
+    label: getCounts('Sent Items'),
     icon: 'lucide:send',
     variant: 'ghost'
   },
   {
     title: 'Junk',
-    label: '23',
+    label: getCounts('Junk Email'),
     icon: 'lucide:archive',
     variant: 'ghost'
   },
   {
     title: 'Trash',
-    label: '',
+    label: getCounts('Deleted Items'),
     icon: 'lucide:trash',
     variant: 'ghost'
   },
   {
     title: 'Archive',
-    label: '',
+    label: getCounts('Archive'),
     icon: 'lucide:archive',
     variant: 'ghost'
   }
@@ -158,9 +171,9 @@ function onExpand() {
           <AccountSwitcher :is-collapsed="isCollapsed" :accounts="accountsStore.accountsDetails" />
         </div>
         <Separator />
-        <Nav :is-collapsed="isCollapsed" :links="links" />
+        <MailNav :is-collapsed="isCollapsed" :links="links" />
         <Separator />
-        <Nav :is-collapsed="isCollapsed" :links="links2" />
+        <MailNav :is-collapsed="isCollapsed" :links="links2" />
       </ResizablePanel>
       <ResizableHandle id="resize-handle-1" with-handle />
       <ResizablePanel id="resize-panel-2" :default-size="defaultLayout[1]" :min-size="30">

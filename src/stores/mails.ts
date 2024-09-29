@@ -1,6 +1,14 @@
-import { computed, type ComputedRef, reactive, type Ref, ref } from 'vue'
+import { computed, type ComputedRef, type Reactive, reactive, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { deleteMail, getFolders, getInbox, type GroupedMessages, listMessages, replyToMail } from '@/lib/graphHelper'
+import {
+  deleteMail,
+  getFolders,
+  getInbox,
+  type GroupedFolders,
+  type GroupedMessages, listFolders,
+  listMessages,
+  replyToMail
+} from '@/lib/graphHelper'
 import { useAccountsStore } from '@/stores/accounts'
 import type { Message } from '@microsoft/microsoft-graph-types'
 
@@ -51,8 +59,9 @@ export const useMailsStore = defineStore('mails', () => {
   // state
   const mails: Ref<Mail[]> = ref([])
   const selectedMailId: Ref<string | undefined> = ref()
-  const messages: Ref<GroupedMails> = ref({})
-  const selectedMailIds: Ref<GroupedMailIds> = ref({})
+  const messages: Reactive<GroupedMails> = reactive({})
+  const mailFolders: Reactive<GroupedFolders> = reactive({})
+  const selectedMailIds: Reactive<GroupedMailIds> = reactive({})
   const filter: Ref<string | undefined> = ref()
 
   // actions
@@ -63,17 +72,27 @@ export const useMailsStore = defineStore('mails', () => {
       mails.value = result
       selectedMailId.value = mails.value[0].id
     }
-    return mails.value // returning the state
+    return mails.value
   }
 
   const getMessages = async (): Promise<GroupedMails> => {
     const accessToken = await accountsStore.acquireToken(['mail.read'])
     const messagesList: GroupedMessages = await listMessages(accessToken)
-    for (const [folder, emails] of Object.entries(messagesList)) {
-      messages.value[folder] = emails.map(toMail)
-      selectedMailIds.value[folder] = messages.value[folder][0].id
+    for (const [folderId, emails] of Object.entries(messagesList)) {
+      const folderKey = Object.values(mailFolders)
+        .find((folder) => folder.id === folder)?.displayName || folderId
+      messages[folderKey] = emails.map(toMail)
+      selectedMailIds[folderKey] = messages[folderKey][0].id
     }
-    return messages.value // returning the state
+    return messages
+  }
+
+  const getGroupedMailFolders = async (): Promise<GroupedFolders> => {
+    console.log('getMailFolders')
+    const accessToken = await accountsStore.acquireToken(['mail.read'])
+    mailFolders.value = await listFolders(accessToken)
+    console.log('mail folders', JSON.stringify(mailFolders.value))
+    return mailFolders;
   }
 
   const getMailFolders = async () => {
@@ -99,14 +118,44 @@ export const useMailsStore = defineStore('mails', () => {
     await getMessages()
   }
 
+  const replyV2 = async (folder: string, body: string) => {
+    const accessToken = await accountsStore.acquireToken(['mail.send'])
+    const messageId: string | undefined = selectedMailIds[folder]
+    const selectedMail = messages[folder].find((mail: Mail) => mail.id === messageId)
+    if (selectedMail) {
+      // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
+      const recipients: EMailAddress[] =
+        selectedMail.replyTo && selectedMail.replyTo.length !== 0
+          ? selectedMail.replyTo.filter(value => value) as EMailAddress[]
+          : [selectedMail.from].filter(value => value) as EMailAddress[]
+      if (recipients) return replyToMail(accessToken, messageId || '', body, recipients)
+    }
+  }
+
+  const deleteSelectedMailV2 = async (folder: string) => {
+    const accessToken = await accountsStore.acquireToken(['mail.readwrite'])
+    const messageId: string | undefined = selectedMailIds[folder]
+    if (messageId) {
+      await deleteMail(accessToken, messageId || '')
+      await getMessages()
+    }
+  }
+
   const filterMailList = (search: string | undefined): Mail[] => {
     filter.value = search
-    return filteredMailList.value // returning the state
+    return filteredMailList.value
   }
 
   const selectMail = (id: string | undefined) => {
     if (id && mails.value.map((mail) => mail.id).includes(id)) selectedMailId.value = id
-    return selectedMail.value // returning the state
+    return selectedMail.value
+  }
+
+  const selectMailV2 = (folder: string, id: string | undefined): Mail | undefined => {
+    if (folder && id && mailFolders[folder] && messages[folder]) {
+      if (messages[folder].map((mail: Mail) => mail.id).includes(id)) selectedMailIds[folder] = id
+    }
+    return messages[folder].find((mail: Mail) => mail.id === id)
   }
 
   // getters
@@ -126,16 +175,51 @@ export const useMailsStore = defineStore('mails', () => {
     )
   })
 
+  const filteredMailListV2: ComputedRef<GroupedMails> = computed(() => {
+    console.log('filteredMailList', filter.value)
+    if (!filter.value || filter.value.trim().length === 0) return messages.value
+    for (const [folderId, emails] of Object.entries(messages)) {
+      const folderKey = Object.values(mailFolders)
+        .find((folder) => folder.id === folder)?.displayName || folderId
+      messages[folderKey] = emails.map(toMail)
+      selectedMailIds[folderKey] = messages[folderKey][0].id
+    }
+    const list = Object.entries(messages)
+      .reduce((acc: GroupedMails, [folder, emails]) => {
+        acc[folder] = emails.filter(
+          (item) =>
+            item.name?.includes(<string>filter.value) ||
+            item.email?.includes(<string>filter.value) ||
+            item.name?.includes(<string>filter.value) ||
+            item.subject?.includes(<string>filter.value) ||
+            item.text?.includes(<string>filter.value)
+        )
+        return acc
+      }, {})
+    console.log('filtered mail list', JSON.stringify(list))
+    return list
+  })
+
   const unreadMailList: ComputedRef<Mail[]> = computed(() =>
     filteredMailList.value.filter((item) => !item.read)
+  )
+
+  const unreadMailListV2: ComputedRef<GroupedMails> = computed(() =>
+    Object.entries(filteredMailListV2.value)
+      .reduce((acc: GroupedMails, [folder, emails]) => {
+        acc[folder] = emails.filter((item) => !item.read)
+        return acc
+      }, {})
   )
 
   return {
     mails,
     selectedMailId,
+    mailFolders,
     filter,
     getMail,
     getMailFolders,
+    getGroupedMailFolders,
     reply,
     deleteSelectedMail,
     selectMail,
