@@ -29,12 +29,9 @@ export const useAccountsStore = defineStore('accounts', () => {
     msalPublicClient
       .loginPopup(request)
       .then((result: AuthenticationResult) => {
-        console.log('authentication result', JSON.stringify(result))
-        console.log('accounts', msalPublicClient.getAllAccounts())
         accounts.value = msalPublicClient.getAllAccounts()
         msalPublicClient.setActiveAccount(result.account)
         selectedAccount.value = result.account
-        console.log(`selected account: ${JSON.stringify(selectedAccount.value)}`)
       })
       .catch((err) => {
         console.error('login failure', err)
@@ -74,11 +71,11 @@ export const useAccountsStore = defineStore('accounts', () => {
     try {
       // 1. Try to acquire token silently
       tokenResp = await msalPublicClient.acquireTokenSilent(accessTokenRequest)
-      console.log('MSAL acquireTokenSilent was successful', JSON.stringify(tokenResp))
+      console.log('MSAL acquireTokenSilent was successful')
     } catch (err) {
       // 2. Silent process might have failed so try via popup
       tokenResp = await msalPublicClient.acquireTokenPopup(accessTokenRequest)
-      console.log('MSAL acquireTokenPopup was successful', JSON.stringify(tokenResp))
+      console.log('MSAL acquireTokenPopup was successful')
     }
 
     // Just in case check, probably never triggers

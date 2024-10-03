@@ -1,4 +1,4 @@
-import { computed, type ComputedRef, type Reactive, reactive, type Ref, ref } from 'vue'
+import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
 import {
   deleteMail,
@@ -10,7 +10,7 @@ import {
   replyToMail
 } from '@/lib/graphHelper'
 import { useAccountsStore } from '@/stores/accounts'
-import type { Message } from '@microsoft/microsoft-graph-types'
+import type { MailFolder, Message } from '@microsoft/microsoft-graph-types'
 
 export interface EMailAddress {
   emailAddress?: {
@@ -59,9 +59,9 @@ export const useMailsStore = defineStore('mails', () => {
   // state
   const mails: Ref<Mail[]> = ref([])
   const selectedMailId: Ref<string | undefined> = ref()
-  const messages: Reactive<GroupedMails> = reactive({})
-  const mailFolders: Reactive<GroupedFolders> = reactive({})
-  const selectedMailIds: Reactive<GroupedMailIds> = reactive({})
+  const messages: Ref<GroupedMails> = ref({})
+  const mailFolders: Ref<GroupedFolders> = ref({})
+  const selectedMailIds: Ref<GroupedMailIds> = ref({})
   const filter: Ref<string | undefined> = ref()
 
   // actions
@@ -79,20 +79,19 @@ export const useMailsStore = defineStore('mails', () => {
     const accessToken = await accountsStore.acquireToken(['mail.read'])
     const messagesList: GroupedMessages = await listMessages(accessToken)
     for (const [folderId, emails] of Object.entries(messagesList)) {
-      const folderKey = Object.values(mailFolders)
-        .find((folder) => folder.id === folder)?.displayName || folderId
-      messages[folderKey] = emails.map(toMail)
-      selectedMailIds[folderKey] = messages[folderKey][0].id
+      const folderKey: string = Object.values(mailFolders.value)
+        .find((folder: MailFolder) => folder.id === folderId)?.displayName || folderId
+      messages.value[folderKey] = emails.map(toMail)
+      selectedMailIds.value[folderKey] = messages.value[folderKey][0].id
     }
-    return messages
+    return messages.value
   }
 
   const getGroupedMailFolders = async (): Promise<GroupedFolders> => {
-    console.log('getMailFolders')
     const accessToken = await accountsStore.acquireToken(['mail.read'])
+    // Object.assign(mailFolders, await listFolders(accessToken))
     mailFolders.value = await listFolders(accessToken)
-    console.log('mail folders', JSON.stringify(mailFolders.value))
-    return mailFolders;
+    return mailFolders.value;
   }
 
   const getMailFolders = async () => {
@@ -120,8 +119,8 @@ export const useMailsStore = defineStore('mails', () => {
 
   const replyV2 = async (folder: string, body: string) => {
     const accessToken = await accountsStore.acquireToken(['mail.send'])
-    const messageId: string | undefined = selectedMailIds[folder]
-    const selectedMail = messages[folder].find((mail: Mail) => mail.id === messageId)
+    const messageId: string | undefined = selectedMailIds.value[folder]
+    const selectedMail = messages.value[folder].find((mail: Mail) => mail.id === messageId)
     if (selectedMail) {
       // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
       const recipients: EMailAddress[] =
@@ -134,7 +133,7 @@ export const useMailsStore = defineStore('mails', () => {
 
   const deleteSelectedMailV2 = async (folder: string) => {
     const accessToken = await accountsStore.acquireToken(['mail.readwrite'])
-    const messageId: string | undefined = selectedMailIds[folder]
+    const messageId: string | undefined = selectedMailIds.value[folder]
     if (messageId) {
       await deleteMail(accessToken, messageId || '')
       await getMessages()
@@ -152,16 +151,27 @@ export const useMailsStore = defineStore('mails', () => {
   }
 
   const selectMailV2 = (folder: string, id: string | undefined): Mail | undefined => {
-    if (folder && id && mailFolders[folder] && messages[folder]) {
-      if (messages[folder].map((mail: Mail) => mail.id).includes(id)) selectedMailIds[folder] = id
+    if (folder && id && mailFolders.value[folder] && messages.value[folder]) {
+      if (messages.value[folder].map((mail: Mail) => mail.id).includes(id)) selectedMailIds.value[folder] = id
     }
-    return messages[folder].find((mail: Mail) => mail.id === id)
+    return messages.value[folder].find((mail: Mail) => mail.id === id)
   }
 
   // getters
   const selectedMail: ComputedRef<Mail> = computed(
     () => mails.value.find((mail) => mail.id === selectedMailId.value) || mails.value[0]
   )
+
+  const getCounts = computed(() => {
+    console.log(`getCounts: ${JSON.stringify(mailFolders.value)}`)
+    if (Object.keys(mailFolders.value).length === 0) return {}
+    return Object.entries(mailFolders.value)
+      .reduce((acc: GroupedMailIds, [name, details]) => {
+        console.log(`name: ${name}; details: ${JSON.stringify(details)}`)
+        acc[name] = `${details.unreadItemCount} / ${details.totalItemCount}`
+        return acc
+      }, {})
+  })
 
   const filteredMailList: ComputedRef<Mail[]> = computed(() => {
     if (!filter.value || filter.value.trim().length === 0) return mails.value
@@ -176,18 +186,17 @@ export const useMailsStore = defineStore('mails', () => {
   })
 
   const filteredMailListV2: ComputedRef<GroupedMails> = computed(() => {
-    console.log('filteredMailList', filter.value)
     if (!filter.value || filter.value.trim().length === 0) return messages.value
-    for (const [folderId, emails] of Object.entries(messages)) {
-      const folderKey = Object.values(mailFolders)
-        .find((folder) => folder.id === folder)?.displayName || folderId
-      messages[folderKey] = emails.map(toMail)
-      selectedMailIds[folderKey] = messages[folderKey][0].id
+    for (const [folderId, emails] of Object.entries(messages.value)) {
+      const folderKey = Object.values(mailFolders.value)
+        .find((folder: MailFolder) => folder.id === folder)?.displayName || folderId
+      messages.value[folderKey] = emails.map(toMail)
+      selectedMailIds.value[folderKey] = messages.value[folderKey][0].id
     }
-    const list = Object.entries(messages)
+    const list = Object.entries(messages.value)
       .reduce((acc: GroupedMails, [folder, emails]) => {
         acc[folder] = emails.filter(
-          (item) =>
+          (item: Mail) =>
             item.name?.includes(<string>filter.value) ||
             item.email?.includes(<string>filter.value) ||
             item.name?.includes(<string>filter.value) ||
@@ -196,7 +205,6 @@ export const useMailsStore = defineStore('mails', () => {
         )
         return acc
       }, {})
-    console.log('filtered mail list', JSON.stringify(list))
     return list
   })
 
@@ -215,10 +223,14 @@ export const useMailsStore = defineStore('mails', () => {
   return {
     mails,
     selectedMailId,
+    messages,
     mailFolders,
+    selectedMailIds,
     filter,
     getMail,
+    getMessages,
     getMailFolders,
+    getCounts,
     getGroupedMailFolders,
     reply,
     deleteSelectedMail,

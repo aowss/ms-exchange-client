@@ -150,7 +150,6 @@ const callAPI = async (
 
   if (isJson(response)) {
     const json = await response.json()
-    console.log(`${name} response [ status = ${response.status} ]: ${JSON.stringify(json)}`)
     return json
   }
 }

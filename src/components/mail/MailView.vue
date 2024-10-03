@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Search } from 'lucide-vue-next'
 
-import { onMounted, onUnmounted, type Reactive, type Ref, ref,reactive } from 'vue'
+import { onMounted, onUnmounted, ref, computed, type ComputedRef } from 'vue'
 import { refDebounced } from '@vueuse/core'
 
 import AccountSwitcher from './AccountSwitcher.vue'
@@ -20,7 +20,6 @@ import {
 } from '@/lib/registry/new-york/ui/resizable'
 import { useAccountsStore } from '@/stores/accounts'
 import { useMailsStore } from '@/stores/mails'
-import type { GroupedFolders } from '@/lib/graphHelper'
 
 const accountsStore = useAccountsStore()
 const mailsStore = useMailsStore()
@@ -31,20 +30,15 @@ let intervalId: any
 const refresh = async() => {
   await mailsStore.getGroupedMailFolders()
   await mailsStore.getMail()
-  // await mailsStore.getMessages()
+  await mailsStore.getMessages()
 }
 
 onMounted(async () => {
-  console.log('onMounted')
-  await refresh()
-  console.log('refresh done')
+  refresh()
   intervalId = setInterval(async () => await refresh(), 30000);
 });
 
 onUnmounted(() => clearInterval(intervalId))
-
-//  TODO:
-const folders: Reactive<GroupedFolders> = reactive(mailsStore.mailFolders)
 
 interface MailProps {
   defaultLayout?: number[]
@@ -62,46 +56,44 @@ const selectedMail = ref<string>()
 const searchValue = ref('')
 const debouncedSearch = refDebounced(searchValue, 250)
 
-const getCounts = (name: string): string => folders[name] ? `${folders[name].unreadItemCount} / ${folders[name].totalItemCount}` : ''
-
-const links: LinkProp[] = [
+const links: ComputedRef<LinkProp[]> = computed(() => [
   {
     title: 'Inbox',
-    label: getCounts('Inbox'),
+    label: mailsStore.getCounts['Inbox'],
     icon: 'lucide:inbox',
     variant: 'default'
   },
   {
     title: 'Drafts',
-    label: getCounts('Drafts'),
+    label: mailsStore.getCounts['Drafts'],
     icon: 'lucide:file',
     variant: 'ghost'
   },
   {
     title: 'Sent',
-    label: getCounts('Sent Items'),
+    label: mailsStore.getCounts['Sent Items'],
     icon: 'lucide:send',
     variant: 'ghost'
   },
   {
     title: 'Junk',
-    label: getCounts('Junk Email'),
+    label: mailsStore.getCounts['Junk Email'],
     icon: 'lucide:archive',
     variant: 'ghost'
   },
   {
     title: 'Trash',
-    label: getCounts('Deleted Items'),
+    label: mailsStore.getCounts['Deleted Items'],
     icon: 'lucide:trash',
     variant: 'ghost'
   },
   {
     title: 'Archive',
-    label: getCounts('Archive'),
+    label: mailsStore.getCounts['Archive'],
     icon: 'lucide:archive',
     variant: 'ghost'
   }
-]
+])
 
 const links2: LinkProp[] = [
   {
