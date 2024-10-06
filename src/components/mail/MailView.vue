@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { Search } from 'lucide-vue-next'
 
-import { onMounted, onUnmounted, ref, computed, type ComputedRef } from 'vue'
+import { onMounted, onUnmounted, ref, computed, type ComputedRef, watch } from 'vue'
 import { refDebounced } from '@vueuse/core'
 
 import AccountSwitcher from './AccountSwitcher.vue'
@@ -29,7 +29,6 @@ let intervalId: any
 
 const refresh = async() => {
   await mailsStore.getGroupedMailFolders()
-  await mailsStore.getMail()
   await mailsStore.getMessages()
 }
 
@@ -52,48 +51,65 @@ const props = withDefaults(defineProps<MailProps>(), {
 })
 
 const isCollapsed = ref(props.defaultCollapsed)
+const selectedFolder = ref<string>('Inbox')
 const selectedMail = ref<string>()
 const searchValue = ref('')
 const debouncedSearch = refDebounced(searchValue, 250)
 
-const links: ComputedRef<LinkProp[]> = computed(() => [
+watch(debouncedSearch,
+  (value, _) => mailsStore.filterMailList(value)
+)
+
+const selectFolder = (title: string) => {
+  selectedFolder.value = folders.find(folder => folder.title === title)?.name || 'Inbox'
+  mailsStore.selectedFolder = selectedFolder.value
+}
+
+export interface Folder {
+  title: string
+  name: string
+  icon: string
+}
+
+const folders: Folder[] = [
   {
     title: 'Inbox',
-    label: mailsStore.getCounts['Inbox'],
-    icon: 'lucide:inbox',
-    variant: 'default'
+    name: 'Inbox',
+    icon: 'lucide:inbox'
   },
   {
     title: 'Drafts',
-    label: mailsStore.getCounts['Drafts'],
-    icon: 'lucide:file',
-    variant: 'ghost'
+    name: 'Drafts',
+    icon: 'lucide:file'
   },
   {
     title: 'Sent',
-    label: mailsStore.getCounts['Sent Items'],
-    icon: 'lucide:send',
-    variant: 'ghost'
+    name: 'Sent Items',
+    icon: 'lucide:send'
   },
   {
     title: 'Junk',
-    label: mailsStore.getCounts['Junk Email'],
-    icon: 'lucide:archive',
-    variant: 'ghost'
+    name: 'Junk Email',
+    icon: 'lucide:archive'
   },
   {
     title: 'Trash',
-    label: mailsStore.getCounts['Deleted Items'],
-    icon: 'lucide:trash',
-    variant: 'ghost'
+    name: 'Deleted Items',
+    icon: 'lucide:trash'
   },
   {
     title: 'Archive',
-    label: mailsStore.getCounts['Archive'],
-    icon: 'lucide:archive',
-    variant: 'ghost'
+    name: 'Archive',
+    icon: 'lucide:archive'
   }
-])
+]
+
+const links: ComputedRef<LinkProp[]> = computed(() => folders.map(folder => ({
+    title: folder.title,
+    label: mailsStore.getCounts[folder.name],
+    icon: folder.icon,
+    variant: selectedFolder.value === folder.name ? 'default' : 'ghost'
+  })))
 
 const links2: LinkProp[] = [
   {
@@ -163,7 +179,7 @@ function onExpand() {
           <AccountSwitcher :is-collapsed="isCollapsed" :accounts="accountsStore.accountsDetails" />
         </div>
         <Separator />
-        <MailNav :is-collapsed="isCollapsed" :links="links" />
+        <MailNav :is-collapsed="isCollapsed" :links="links" @folderSelected="selectFolder" />
         <Separator />
         <MailNav :is-collapsed="isCollapsed" :links="links2" />
       </ResizablePanel>
@@ -171,7 +187,7 @@ function onExpand() {
       <ResizablePanel id="resize-panel-2" :default-size="defaultLayout[1]" :min-size="30">
         <Tabs default-value="all">
           <div class="flex items-center px-4 py-2">
-            <h1 class="text-xl font-bold">Inbox</h1>
+            <h1 class="text-xl font-bold">{{ selectedFolder }}</h1>
             <TabsList class="ml-auto">
               <TabsTrigger value="all" class="text-zinc-600 dark:text-zinc-200">
                 All mail
@@ -195,18 +211,19 @@ function onExpand() {
           <TabsContent value="all" class="m-0">
             <MailList
               v-model:selected-mail="selectedMail"
-              :items="mailsStore.filterMailList(debouncedSearch)"
+              :folder="selectedFolder"
+              :items="mailsStore.filteredMailList[selectedFolder] || []"
             />
           </TabsContent>
           <TabsContent value="unread" class="m-0">
             <!--            TODO: handle the search filter for unread mails-->
-            <MailList v-model:selected-mail="selectedMail" :items="mailsStore.unreadMailList" />
+            <MailList v-model:selected-mail="selectedMail" :folder="selectedFolder" :items="mailsStore.unreadMailList[selectedFolder] || []" />
           </TabsContent>
         </Tabs>
       </ResizablePanel>
       <ResizableHandle id="resiz-handle-2" with-handle />
       <ResizablePanel id="resize-panel-3" :default-size="defaultLayout[2]">
-        <MailDisplay :mail="mailsStore.selectMail(selectedMail)" />
+        <MailDisplay :mail="mailsStore.selectMail(selectedFolder, selectedMail)" />
       </ResizablePanel>
     </ResizablePanelGroup>
   </TooltipProvider>

@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import {
   deleteMail,
   getFolders,
-  getInbox,
   type GroupedFolders,
   type GroupedMessages, listFolders,
   listMessages,
@@ -57,28 +56,17 @@ const accountsStore = useAccountsStore()
 
 export const useMailsStore = defineStore('mails', () => {
   // state
-  const mails: Ref<Mail[]> = ref([])
-  const selectedMailId: Ref<string | undefined> = ref()
   const messages: Ref<GroupedMails> = ref({})
   const mailFolders: Ref<GroupedFolders> = ref({})
+  const selectedFolder: Ref<string> = ref('Inbox')
   const selectedMailIds: Ref<GroupedMailIds> = ref({})
   const filter: Ref<string | undefined> = ref()
-
-  // actions
-  const getMail = async (): Promise<Mail[]> => {
-    const accessToken = await accountsStore.acquireToken(['mail.read'])
-    const result: Mail[] = await getInbox(accessToken).then((emails) => emails.value.map(toMail))
-    if (result) {
-      mails.value = result
-      selectedMailId.value = mails.value[0].id
-    }
-    return mails.value
-  }
 
   const getMessages = async (): Promise<GroupedMails> => {
     const accessToken = await accountsStore.acquireToken(['mail.read'])
     const messagesList: GroupedMessages = await listMessages(accessToken)
     for (const [folderId, emails] of Object.entries(messagesList)) {
+      console.log(`folder: ${folderId}`)
       const folderKey: string = Object.values(mailFolders.value)
         .find((folder: MailFolder) => folder.id === folderId)?.displayName || folderId
       messages.value[folderKey] = emails.map(toMail)
@@ -142,24 +130,28 @@ export const useMailsStore = defineStore('mails', () => {
 
   const filterMailList = (search: string | undefined): Mail[] => {
     filter.value = search
-    return filteredMailList.value
+    return filteredMailList.value[selectedFolder.value]
   }
 
-  const selectMail = (id: string | undefined) => {
-    if (id && mails.value.map((mail) => mail.id).includes(id)) selectedMailId.value = id
+  const selectMail = (folder: string, id: string | undefined): Mail | undefined => {
+    console.log('selectMail', folder, id)
+    if (folder && id && mailFolders.value[folder] && messages.value[folder]) {
+      console.log('folder found')
+      if (messages.value[folder].map((mail: Mail) => mail.id).includes(id)) {
+        console.log('mail found in folder')
+        selectedMailIds.value[folder] = id
+      }
+    }
+    // return messages.value[folder].find((mail: Mail) => mail.id === id)
     return selectedMail.value
   }
 
-  const selectMailV2 = (folder: string, id: string | undefined): Mail | undefined => {
-    if (folder && id && mailFolders.value[folder] && messages.value[folder]) {
-      if (messages.value[folder].map((mail: Mail) => mail.id).includes(id)) selectedMailIds.value[folder] = id
-    }
-    return messages.value[folder].find((mail: Mail) => mail.id === id)
-  }
-
   // getters
+  const mails: ComputedRef<Mail[]> = computed(() => messages.value['Inbox'] || [])
+  const selectedMailId: ComputedRef<string | undefined> = computed(() => selectedMailIds.value['Inbox'])
+
   const selectedMail: ComputedRef<Mail> = computed(
-    () => mails.value.find((mail) => mail.id === selectedMailId.value) || mails.value[0]
+    () => mails.value.find((mail) => mail.id === selectedMailIds.value[selectedFolder.value]) || mails.value[0]
   )
 
   const getCounts = computed(() => {
@@ -173,19 +165,19 @@ export const useMailsStore = defineStore('mails', () => {
       }, {})
   })
 
-  const filteredMailList: ComputedRef<Mail[]> = computed(() => {
-    if (!filter.value || filter.value.trim().length === 0) return mails.value
-    return mails.value.filter(
-      (item) =>
-        item.name?.includes(<string>filter.value) ||
-        item.email?.includes(<string>filter.value) ||
-        item.name?.includes(<string>filter.value) ||
-        item.subject?.includes(<string>filter.value) ||
-        item.text?.includes(<string>filter.value)
-    )
-  })
+  // const filteredMailList: ComputedRef<Mail[]> = computed(() => {
+  //   if (!filter.value || filter.value.trim().length === 0) return mails.value
+  //   return mails.value.filter(
+  //     (item) =>
+  //       item.name?.includes(<string>filter.value) ||
+  //       item.email?.includes(<string>filter.value) ||
+  //       item.name?.includes(<string>filter.value) ||
+  //       item.subject?.includes(<string>filter.value) ||
+  //       item.text?.includes(<string>filter.value)
+  //   )
+  // })
 
-  const filteredMailListV2: ComputedRef<GroupedMails> = computed(() => {
+  const filteredMailList: ComputedRef<GroupedMails> = computed(() => {
     if (!filter.value || filter.value.trim().length === 0) return messages.value
     for (const [folderId, emails] of Object.entries(messages.value)) {
       const folderKey = Object.values(mailFolders.value)
@@ -208,12 +200,12 @@ export const useMailsStore = defineStore('mails', () => {
     return list
   })
 
-  const unreadMailList: ComputedRef<Mail[]> = computed(() =>
-    filteredMailList.value.filter((item) => !item.read)
-  )
+  // const unreadMailList: ComputedRef<Mail[]> = computed(() =>
+  //   filteredMailList.value.filter((item) => !item.read)
+  // )
 
-  const unreadMailListV2: ComputedRef<GroupedMails> = computed(() =>
-    Object.entries(filteredMailListV2.value)
+  const unreadMailList: ComputedRef<GroupedMails> = computed(() =>
+    Object.entries(filteredMailList.value)
       .reduce((acc: GroupedMails, [folder, emails]) => {
         acc[folder] = emails.filter((item) => !item.read)
         return acc
@@ -225,9 +217,9 @@ export const useMailsStore = defineStore('mails', () => {
     selectedMailId,
     messages,
     mailFolders,
+    selectedFolder,
     selectedMailIds,
     filter,
-    getMail,
     getMessages,
     getMailFolders,
     getCounts,

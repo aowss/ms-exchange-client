@@ -95,6 +95,7 @@ export const listMessages = async (
   limit: number = 25
 ): Promise<GroupedMessages> => {
   const messages = await callAPI('List messages', URL_MESSAGES, 'GET', accessToken)
+  console.log(`messages: ${JSON.stringify(messages)}`)
   const messagesPerFolder = messages.value
     .reduce((acc: GroupedMessages, message: Message) => {
       const folder = message.parentFolderId
@@ -104,6 +105,7 @@ export const listMessages = async (
       }
       return acc
     }, {})
+  console.log(`messagesPerFolder: ${JSON.stringify(messagesPerFolder)}`)
   return messagesPerFolder
 }
 
