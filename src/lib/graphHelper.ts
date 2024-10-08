@@ -1,5 +1,5 @@
 import 'isomorphic-fetch'
-import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
+import { type PageCollection } from '@microsoft/microsoft-graph-client'
 import type { Folder, MailFolder, Message, User } from '@microsoft/microsoft-graph-types'
 import type { EMailAddress } from '@/stores/mails'
 
@@ -13,12 +13,11 @@ const URL_MESSAGE = `${URL_MESSAGES}/{id}`
 const URL_REPLY = `${URL_MESSAGE}/reply`
 
 export const sendMail = async (
-  graphClient: Client,
+  accessToken: string,
   subject: string,
   body: string,
   recipients: string[]
 ) => {
-  if (!graphClient) throw new Error('Graph has not been initialized for user auth')
   if (!subject || subject.trim().length === 0) throw new Error('Subject is mandatory')
   if (!body || body.trim().length === 0) throw new Error('Body is mandatory')
   if (
@@ -39,25 +38,14 @@ export const sendMail = async (
       .map((recipient) => ({ emailAddress: { address: recipient } }))
   }
 
-  return graphClient.api(URL_SEND_MAIL).post({ message: message })
+  return callAPI('Send Mail', URL_SEND_MAIL, 'POST', accessToken, message)
 }
 
-export const getUser = async (
-  graphClient: Client,
-  properties: string[] = ['displayName', 'mail', 'userPrincipalName']
-): Promise<User> => {
-  if (!graphClient) throw new Error('Graph has not been initialized for user auth')
+export const getUser = async (accessToken: string): Promise<User> =>
+  callAPI('Get User', URL_USER, 'GET', accessToken)
 
-  return graphClient.api(URL_USER).select(properties).get()
-}
-
-export const getInbox = async (
-  accessToken: string,
-  properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'],
-  limit: number = 25
-): Promise<PageCollection> => {
-  return callAPI('List Inbox messages', URL_INBOX_MESSAGES, 'GET', accessToken)
-}
+export const getInbox = async (accessToken: string): Promise<PageCollection> =>
+  callAPI('List Inbox messages', URL_INBOX_MESSAGES, 'GET', accessToken)
 
 /**
  * The key is the folder's id
@@ -73,39 +61,28 @@ export interface GroupedFolders {
   [key: string]: MailFolder
 }
 
-export const listFolders = async(accessToken: string): Promise<GroupedFolders> => {
+export const listFolders = async (accessToken: string): Promise<GroupedFolders> => {
   const folders = await callAPI('List folders', URL_FOLDERS, 'GET', accessToken)
-  const foldersByName = folders.value
-    .reduce((acc: GroupedFolders, folder: MailFolder) => {
-      const name = folder.displayName
-      if (name) acc[name] = folder
-      return acc
-    }, {})
-  return foldersByName
+  return folders.value.reduce((acc: GroupedFolders, folder: MailFolder) => {
+    const name = folder.displayName
+    if (name) acc[name] = folder
+    return acc
+  }, {})
 }
 
-export const getFolders = async(accessToken: string): Promise<Folder> => {
-  const folders = await callAPI('List folders', URL_FOLDERS, 'GET', accessToken)
-  return folders.value
-}
+export const getFolders = async (accessToken: string): Promise<Folder> =>
+  callAPI('List folders', URL_FOLDERS, 'GET', accessToken)
 
-export const listMessages = async (
-  accessToken: string,
-  properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'],
-  limit: number = 25
-): Promise<GroupedMessages> => {
+export const listMessages = async (accessToken: string): Promise<GroupedMessages> => {
   const messages = await callAPI('List messages', URL_MESSAGES, 'GET', accessToken)
-  console.log(`messages: ${JSON.stringify(messages)}`)
-  const messagesPerFolder = messages.value
-    .reduce((acc: GroupedMessages, message: Message) => {
-      const folder = message.parentFolderId
-      if (folder) {
-        if (!acc[folder]) acc[folder] = []
-        acc[folder].push(message)
-      }
-      return acc
-    }, {})
-  console.log(`messagesPerFolder: ${JSON.stringify(messagesPerFolder)}`)
+  const messagesPerFolder = messages.value.reduce((acc: GroupedMessages, message: Message) => {
+    const folder = message.parentFolderId
+    if (folder) {
+      if (!acc[folder]) acc[folder] = []
+      acc[folder].push(message)
+    }
+    return acc
+  }, {})
   return messagesPerFolder
 }
 
@@ -150,10 +127,7 @@ const callAPI = async (
     throw new Error(`Error while calling ${name}: status: ${response.status}`)
   }
 
-  if (isJson(response)) {
-    const json = await response.json()
-    return json
-  }
+  if (isJson(response)) return response.json()
 }
 
 const isJson = (response: Response) =>

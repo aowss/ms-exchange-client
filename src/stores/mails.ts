@@ -4,7 +4,8 @@ import {
   deleteMail,
   getFolders,
   type GroupedFolders,
-  type GroupedMessages, listFolders,
+  type GroupedMessages,
+  listFolders,
   listMessages,
   replyToMail
 } from '@/lib/graphHelper'
@@ -66,8 +67,9 @@ export const useMailsStore = defineStore('mails', () => {
     const accessToken = await accountsStore.acquireToken(['mail.read'])
     const messagesList: GroupedMessages = await listMessages(accessToken)
     for (const [folderId, emails] of Object.entries(messagesList)) {
-      const folderKey: string = Object.values(mailFolders.value)
-        .find((folder: MailFolder) => folder.id === folderId)?.displayName || folderId
+      const folderKey: string =
+        Object.values(mailFolders.value).find((folder: MailFolder) => folder.id === folderId)
+          ?.displayName || folderId
       messages.value[folderKey] = emails.map(toMail)
       selectedMailIds.value[folderKey] = messages.value[folderKey][0].id
     }
@@ -78,7 +80,7 @@ export const useMailsStore = defineStore('mails', () => {
     const accessToken = await accountsStore.acquireToken(['mail.read'])
     // Object.assign(mailFolders, await listFolders(accessToken))
     mailFolders.value = await listFolders(accessToken)
-    return mailFolders.value;
+    return mailFolders.value
   }
 
   const getMailFolders = async () => {
@@ -90,10 +92,10 @@ export const useMailsStore = defineStore('mails', () => {
     const accessToken = await accountsStore.acquireToken(['mail.send'])
     const messageId = selectedMail.value.id
     // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
-    const recipients: EMailAddress[]=
+    const recipients: EMailAddress[] =
       selectedMail.value.replyTo && selectedMail.value.replyTo.length !== 0
-        ? selectedMail.value.replyTo.filter(value => value) as EMailAddress[]
-        : [selectedMail.value.from].filter(value => value) as EMailAddress[]
+        ? (selectedMail.value.replyTo.filter((value) => value) as EMailAddress[])
+        : ([selectedMail.value.from].filter((value) => value) as EMailAddress[])
     if (recipients) return replyToMail(accessToken, messageId || '', body, recipients)
   }
 
@@ -112,8 +114,8 @@ export const useMailsStore = defineStore('mails', () => {
       // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
       const recipients: EMailAddress[] =
         selectedMail.replyTo && selectedMail.replyTo.length !== 0
-          ? selectedMail.replyTo.filter(value => value) as EMailAddress[]
-          : [selectedMail.from].filter(value => value) as EMailAddress[]
+          ? (selectedMail.replyTo.filter((value) => value) as EMailAddress[])
+          : ([selectedMail.from].filter((value) => value) as EMailAddress[])
       if (recipients) return replyToMail(accessToken, messageId || '', body, recipients)
     }
   }
@@ -142,22 +144,23 @@ export const useMailsStore = defineStore('mails', () => {
   }
 
   // getters
-  const selectedMail: ComputedRef<Mail | undefined> = computed(
-    () => {
-      if (messages.value && selectedFolder.value && messages.value[selectedFolder.value]) {
-        return messages.value[selectedFolder.value]?.find((message: Mail) => message.id === selectedMailIds.value[selectedFolder.value]) || messages.value[selectedFolder.value][0]
-      }
-      return undefined
+  const selectedMail: ComputedRef<Mail | undefined> = computed(() => {
+    if (messages.value && selectedFolder.value && messages.value[selectedFolder.value]) {
+      return (
+        messages.value[selectedFolder.value]?.find(
+          (message: Mail) => message.id === selectedMailIds.value[selectedFolder.value]
+        ) || messages.value[selectedFolder.value][0]
+      )
     }
-  )
+    return undefined
+  })
 
   const getCounts = computed(() => {
     if (Object.keys(mailFolders.value).length === 0) return {}
-    return Object.entries(mailFolders.value)
-      .reduce((acc: GroupedMailIds, [name, details]) => {
-        acc[name] = `${details.unreadItemCount} / ${details.totalItemCount}`
-        return acc
-      }, {})
+    return Object.entries(mailFolders.value).reduce((acc: GroupedMailIds, [name, details]) => {
+      acc[name] = `${details.unreadItemCount} / ${details.totalItemCount}`
+      return acc
+    }, {})
   })
 
   // const filteredMailList: ComputedRef<Mail[]> = computed(() => {
@@ -175,23 +178,23 @@ export const useMailsStore = defineStore('mails', () => {
   const filteredMailList: ComputedRef<GroupedMails> = computed(() => {
     if (!filter.value || filter.value.trim().length === 0) return messages.value
     for (const [folderId, emails] of Object.entries(messages.value)) {
-      const folderKey = Object.values(mailFolders.value)
-        .find((folder: MailFolder) => folder.id === folder)?.displayName || folderId
+      const folderKey =
+        Object.values(mailFolders.value).find((folder: MailFolder) => folder.id === folder)
+          ?.displayName || folderId
       messages.value[folderKey] = emails.map(toMail)
       selectedMailIds.value[folderKey] = messages.value[folderKey][0].id
     }
-    const list = Object.entries(messages.value)
-      .reduce((acc: GroupedMails, [folder, emails]) => {
-        acc[folder] = emails.filter(
-          (item: Mail) =>
-            item.name?.includes(<string>filter.value) ||
-            item.email?.includes(<string>filter.value) ||
-            item.name?.includes(<string>filter.value) ||
-            item.subject?.includes(<string>filter.value) ||
-            item.text?.includes(<string>filter.value)
-        )
-        return acc
-      }, {})
+    const list = Object.entries(messages.value).reduce((acc: GroupedMails, [folder, emails]) => {
+      acc[folder] = emails.filter(
+        (item: Mail) =>
+          item.name?.includes(<string>filter.value) ||
+          item.email?.includes(<string>filter.value) ||
+          item.name?.includes(<string>filter.value) ||
+          item.subject?.includes(<string>filter.value) ||
+          item.text?.includes(<string>filter.value)
+      )
+      return acc
+    }, {})
     return list
   })
 
@@ -200,11 +203,10 @@ export const useMailsStore = defineStore('mails', () => {
   // )
 
   const unreadMailList: ComputedRef<GroupedMails> = computed(() =>
-    Object.entries(filteredMailList.value)
-      .reduce((acc: GroupedMails, [folder, emails]) => {
-        acc[folder] = emails.filter((item) => !item.read)
-        return acc
-      }, {})
+    Object.entries(filteredMailList.value).reduce((acc: GroupedMails, [folder, emails]) => {
+      acc[folder] = emails.filter((item) => !item.read)
+      return acc
+    }, {})
   )
 
   return {
