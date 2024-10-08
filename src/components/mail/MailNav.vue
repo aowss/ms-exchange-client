@@ -20,10 +20,7 @@ defineProps<NavProps>()
 
 const emit = defineEmits(['folderSelected'])
 
-const selected = (link: LinkProp) => {
-  console.log('emit folder selected event', link)
-  emit('folderSelected', link.title)
-}
+const selected = (link: LinkProp) => emit('folderSelected', link.title)
 </script>
 
 <template>

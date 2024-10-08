@@ -66,7 +66,6 @@ export const useMailsStore = defineStore('mails', () => {
     const accessToken = await accountsStore.acquireToken(['mail.read'])
     const messagesList: GroupedMessages = await listMessages(accessToken)
     for (const [folderId, emails] of Object.entries(messagesList)) {
-      console.log(`folder: ${folderId}`)
       const folderKey: string = Object.values(mailFolders.value)
         .find((folder: MailFolder) => folder.id === folderId)?.displayName || folderId
       messages.value[folderKey] = emails.map(toMail)
@@ -134,32 +133,28 @@ export const useMailsStore = defineStore('mails', () => {
   }
 
   const selectMail = (folder: string, id: string | undefined): Mail | undefined => {
-    console.log('selectMail', folder, id)
     if (folder && id && mailFolders.value[folder] && messages.value[folder]) {
-      console.log('folder found')
       if (messages.value[folder].map((mail: Mail) => mail.id).includes(id)) {
-        console.log('mail found in folder')
         selectedMailIds.value[folder] = id
       }
     }
-    // return messages.value[folder].find((mail: Mail) => mail.id === id)
     return selectedMail.value
   }
 
   // getters
-  const mails: ComputedRef<Mail[]> = computed(() => messages.value['Inbox'] || [])
-  const selectedMailId: ComputedRef<string | undefined> = computed(() => selectedMailIds.value['Inbox'])
-
-  const selectedMail: ComputedRef<Mail> = computed(
-    () => mails.value.find((mail) => mail.id === selectedMailIds.value[selectedFolder.value]) || mails.value[0]
+  const selectedMail: ComputedRef<Mail | undefined> = computed(
+    () => {
+      if (messages.value && selectedFolder.value && messages.value[selectedFolder.value]) {
+        return messages.value[selectedFolder.value]?.find((message: Mail) => message.id === selectedMailIds.value[selectedFolder.value]) || messages.value[selectedFolder.value][0]
+      }
+      return undefined
+    }
   )
 
   const getCounts = computed(() => {
-    console.log(`getCounts: ${JSON.stringify(mailFolders.value)}`)
     if (Object.keys(mailFolders.value).length === 0) return {}
     return Object.entries(mailFolders.value)
       .reduce((acc: GroupedMailIds, [name, details]) => {
-        console.log(`name: ${name}; details: ${JSON.stringify(details)}`)
         acc[name] = `${details.unreadItemCount} / ${details.totalItemCount}`
         return acc
       }, {})
@@ -213,8 +208,6 @@ export const useMailsStore = defineStore('mails', () => {
   )
 
   return {
-    mails,
-    selectedMailId,
     messages,
     mailFolders,
     selectedFolder,
