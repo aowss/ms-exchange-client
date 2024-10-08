@@ -55,7 +55,6 @@ const deleteMail = () => {
 }
 
 const replyToMail = async () => {
-  console.log(`reply to email: ${replyMessage.value}`)
   await mailsStore.reply(replyMessage.value)
   replyMessage.value = ''
 }

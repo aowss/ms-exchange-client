@@ -17,6 +17,10 @@ interface NavProps {
 }
 
 defineProps<NavProps>()
+
+const emit = defineEmits(['folderSelected'])
+
+const selected = (link: LinkProp) => emit('folderSelected', link.title)
 </script>
 
 <template>
@@ -65,6 +69,7 @@ defineProps<NavProps>()
               'justify-start'
             )
           "
+          @click="selected(link)"
         >
           <Icon :icon="link.icon" class="mr-2 size-4" />
           {{ link.title }}

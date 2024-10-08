@@ -1,14 +1,16 @@
 import 'isomorphic-fetch'
 import { Client, type PageCollection } from '@microsoft/microsoft-graph-client'
-import type { Message, User } from '@microsoft/microsoft-graph-types'
+import type { Folder, MailFolder, Message, User } from '@microsoft/microsoft-graph-types'
 import type { EMailAddress } from '@/stores/mails'
 
 const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
 const URL_USER = 'me'
 const URL_SEND_MAIL = 'me/sendMail'
-const URL_INBOX_MESSAGES = 'me/mailFolders/inbox/messages'
-const URL_MESSAGE = 'me/messages/{id}'
-const URL_REPLY = 'me/messages/{id}/reply'
+const URL_FOLDERS = 'me/mailFolders'
+const URL_INBOX_MESSAGES = `${URL_FOLDERS}/inbox/messages`
+const URL_MESSAGES = 'me/messages'
+const URL_MESSAGE = `${URL_MESSAGES}/{id}`
+const URL_REPLY = `${URL_MESSAGE}/reply`
 
 export const sendMail = async (
   graphClient: Client,
@@ -54,7 +56,57 @@ export const getInbox = async (
   properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'],
   limit: number = 25
 ): Promise<PageCollection> => {
-  return callAPI('List messages', URL_INBOX_MESSAGES, 'GET', accessToken)
+  return callAPI('List Inbox messages', URL_INBOX_MESSAGES, 'GET', accessToken)
+}
+
+/**
+ * The key is the folder's id
+ */
+export interface GroupedMessages {
+  [key: string]: Message[]
+}
+
+/**
+ * The key is the folder's display name
+ */
+export interface GroupedFolders {
+  [key: string]: MailFolder
+}
+
+export const listFolders = async(accessToken: string): Promise<GroupedFolders> => {
+  const folders = await callAPI('List folders', URL_FOLDERS, 'GET', accessToken)
+  const foldersByName = folders.value
+    .reduce((acc: GroupedFolders, folder: MailFolder) => {
+      const name = folder.displayName
+      if (name) acc[name] = folder
+      return acc
+    }, {})
+  return foldersByName
+}
+
+export const getFolders = async(accessToken: string): Promise<Folder> => {
+  const folders = await callAPI('List folders', URL_FOLDERS, 'GET', accessToken)
+  return folders.value
+}
+
+export const listMessages = async (
+  accessToken: string,
+  properties: string[] = ['from', 'isRead', 'receivedDateTime', 'subject'],
+  limit: number = 25
+): Promise<GroupedMessages> => {
+  const messages = await callAPI('List messages', URL_MESSAGES, 'GET', accessToken)
+  console.log(`messages: ${JSON.stringify(messages)}`)
+  const messagesPerFolder = messages.value
+    .reduce((acc: GroupedMessages, message: Message) => {
+      const folder = message.parentFolderId
+      if (folder) {
+        if (!acc[folder]) acc[folder] = []
+        acc[folder].push(message)
+      }
+      return acc
+    }, {})
+  console.log(`messagesPerFolder: ${JSON.stringify(messagesPerFolder)}`)
+  return messagesPerFolder
 }
 
 export const replyToMail = async (
@@ -100,7 +152,6 @@ const callAPI = async (
 
   if (isJson(response)) {
     const json = await response.json()
-    console.log(`${name} response [ status = ${response.status} ]: ${JSON.stringify(json)}`)
     return json
   }
 }

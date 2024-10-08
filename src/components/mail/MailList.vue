@@ -6,6 +6,7 @@ import { Badge } from '@/lib/registry/new-york/ui/badge'
 import type { Mail } from '@/stores/mails'
 
 interface MailListProps {
+  folder: string
   items: Mail[]
 }
 
