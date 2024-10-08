@@ -27,15 +27,15 @@ const mailsStore = useMailsStore()
 // TODO: check if this the right approach ( https://vuejs.org/api/composition-api-lifecycle.html#onunmounted )
 let intervalId: any
 
-const refresh = async() => {
+const refresh = async () => {
   await mailsStore.getGroupedMailFolders()
   await mailsStore.getMessages()
 }
 
 onMounted(async () => {
   refresh()
-  intervalId = setInterval(async () => await refresh(), 30000);
-});
+  intervalId = setInterval(async () => await refresh(), 30000)
+})
 
 onUnmounted(() => clearInterval(intervalId))
 
@@ -56,12 +56,10 @@ const selectedMail = ref<string>()
 const searchValue = ref('')
 const debouncedSearch = refDebounced(searchValue, 250)
 
-watch(debouncedSearch,
-  (value, _) => mailsStore.filterMailList(value)
-)
+watch(debouncedSearch, (value) => mailsStore.filterMailList(value))
 
 const selectFolder = (title: string) => {
-  selectedFolder.value = folders.find(folder => folder.title === title)?.name || 'Inbox'
+  selectedFolder.value = folders.find((folder) => folder.title === title)?.name || 'Inbox'
   mailsStore.selectedFolder = selectedFolder.value
 }
 
@@ -104,12 +102,14 @@ const folders: Folder[] = [
   }
 ]
 
-const links: ComputedRef<LinkProp[]> = computed(() => folders.map(folder => ({
+const links: ComputedRef<LinkProp[]> = computed(() =>
+  folders.map((folder) => ({
     title: folder.title,
     label: mailsStore.getCounts[folder.name],
     icon: folder.icon,
     variant: selectedFolder.value === folder.name ? 'default' : 'ghost'
-  })))
+  }))
+)
 
 const links2: LinkProp[] = [
   {
@@ -217,7 +217,11 @@ function onExpand() {
           </TabsContent>
           <TabsContent value="unread" class="m-0">
             <!--            TODO: handle the search filter for unread mails-->
-            <MailList v-model:selected-mail="selectedMail" :folder="selectedFolder" :items="mailsStore.unreadMailList[selectedFolder] || []" />
+            <MailList
+              v-model:selected-mail="selectedMail"
+              :folder="selectedFolder"
+              :items="mailsStore.unreadMailList[selectedFolder] || []"
+            />
           </TabsContent>
         </Tabs>
       </ResizablePanel>
