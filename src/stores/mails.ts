@@ -90,20 +90,24 @@ export const useMailsStore = defineStore('mails', () => {
 
   const reply = async (body: string) => {
     const accessToken = await accountsStore.acquireToken(['mail.send'])
-    const messageId = selectedMail.value.id
-    // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
-    const recipients: EMailAddress[] =
-      selectedMail.value.replyTo && selectedMail.value.replyTo.length !== 0
-        ? (selectedMail.value.replyTo.filter((value) => value) as EMailAddress[])
-        : ([selectedMail.value.from].filter((value) => value) as EMailAddress[])
-    if (recipients) return replyToMail(accessToken, messageId || '', body, recipients)
+    if (selectedMail.value) {
+      const messageId = selectedMail.value.id
+      // From the doc: If the original message specifies a recipient in the 'replyTo' property, use it.
+      const recipients: EMailAddress[] =
+        selectedMail.value.replyTo && selectedMail.value.replyTo.length !== 0
+          ? (selectedMail.value.replyTo.filter((value) => value) as EMailAddress[])
+          : ([selectedMail.value.from].filter((value) => value) as EMailAddress[])
+      if (recipients) return replyToMail(accessToken, messageId || '', body, recipients)
+    }
   }
 
   const deleteSelectedMail = async () => {
     const accessToken = await accountsStore.acquireToken(['mail.readwrite'])
-    const messageId = selectedMail.value.id
-    await deleteMail(accessToken, messageId || '')
-    await getMessages()
+    if (selectedMail.value) {
+      const messageId = selectedMail.value.id
+      await deleteMail(accessToken, messageId || '')
+      await getMessages()
+    }
   }
 
   const replyV2 = async (folder: string, body: string) => {
