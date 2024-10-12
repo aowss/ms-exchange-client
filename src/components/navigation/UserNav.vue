@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/lib/registry/new-york/ui/dropdown-menu'
 import { useAccountsStore } from '@/stores/accounts'
@@ -51,16 +50,10 @@ const logoutPopup = () => accountsStore.logout()
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem>
-          Profile
-          <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-        </DropdownMenuItem>
+        <DropdownMenuItem> Profile </DropdownMenuItem>
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
-      <DropdownMenuItem @click="logoutPopup">
-        Log out
-        <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-      </DropdownMenuItem>
+      <DropdownMenuItem @click="logoutPopup"> Log out </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
