@@ -5,6 +5,7 @@ import type { EMailAddress } from '@/stores/mails'
 
 const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
 const URL_USER = 'me'
+const URL_PHOTO = 'me/photo/$value'
 const URL_SEND_MAIL = 'me/sendMail'
 const URL_FOLDERS = 'me/mailFolders'
 const URL_INBOX_MESSAGES = `${URL_FOLDERS}/inbox/messages`
@@ -43,6 +44,9 @@ export const sendMail = async (
 
 export const getUser = async (accessToken: string): Promise<User> =>
   callAPI('Get User', URL_USER, 'GET', accessToken)
+
+export const getPhoto = async (accessToken: string) =>
+  callAPI('Get Photo', URL_PHOTO, 'GET', accessToken)
 
 export const getInbox = async (accessToken: string): Promise<PageCollection> =>
   callAPI('List Inbox messages', URL_INBOX_MESSAGES, 'GET', accessToken)
@@ -112,9 +116,10 @@ const callAPI = async (
   URL: string,
   method: string,
   accessToken: string,
-  body?: object
+  body?: object,
+  handler: (response: Response) => any = defaultHandler
 ) => {
-  const response = await fetch(`${GRAPH_URL}/${URL}`, {
+  const response: Response = await fetch(`${GRAPH_URL}/${URL}`, {
     method: method,
     body: body ? JSON.stringify(body) : null,
     headers: {
@@ -127,8 +132,23 @@ const callAPI = async (
     throw new Error(`Error while calling ${name}: status: ${response.status}`)
   }
 
+  return handler(response)
+}
+
+const defaultHandler: (response: Response) => any = (response: Response) => {
   if (isJson(response)) return response.json()
+  else if (isBinary(response)) return response.blob()
+  else return response.text()
 }
 
 const isJson = (response: Response) =>
-  response.headers.get('Content-Type')?.includes('application/json')
+  getContentType(response)?.includes('application/json')
+
+const isBinary = (response: Response) => {
+  const type = getType(response)
+  const contentType = getContentType(response)
+  return (type && ['audio', 'image', 'video'].includes(type)) || contentType?.includes('application/octet-stream')
+}
+
+const getType = (response: Response): string | undefined => response.headers.get('Content-Type')?.split('/')[0]
+const getContentType = (response: Response): string | null => response.headers.get('Content-Type')
