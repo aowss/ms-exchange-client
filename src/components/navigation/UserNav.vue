@@ -12,8 +12,10 @@ import {
 } from '@/lib/registry/new-york/ui/dropdown-menu'
 import { useAccountsStore } from '@/stores/accounts'
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 
 const accountsStore = useAccountsStore()
+accountsStore.getPicture()
 
 const name = accountsStore.accountDetails?.label || ''
 const initials = computed(() =>
@@ -23,6 +25,8 @@ const initials = computed(() =>
     .join('')
 )
 const email = accountsStore.accountDetails?.email || ''
+const { picture } = storeToRefs(accountsStore)
+const src = picture || ''
 
 const logoutPopup = () => accountsStore.logout()
 </script>
@@ -32,7 +36,7 @@ const logoutPopup = () => accountsStore.logout()
     <DropdownMenuTrigger as-child>
       <Button variant="ghost" class="relative h-8 w-8 rounded-full">
         <Avatar class="h-8 w-8">
-          <AvatarImage src="/avatars/01.png" alt="@shadcn" />
+          <AvatarImage :src="src" :alt="initials" />
           <AvatarFallback>{{ initials }}</AvatarFallback>
         </Avatar>
       </Button>

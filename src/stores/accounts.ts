@@ -3,11 +3,12 @@ import { defineStore } from 'pinia'
 import { appConfig, msalConfig } from '@/config'
 import { msalPublicClient } from '@/lib/clients'
 import { type AccountInfo, type AuthenticationResult, type PopupRequest } from '@azure/msal-browser'
+import { getPhoto } from '@/lib/graphHelper'
+import { blobToBase64 } from '@/lib/utils'
 
 export interface Account {
   label: string
   email: string
-  icon?: string
 }
 
 const toAccount = (info: AccountInfo): Account => ({
@@ -19,6 +20,7 @@ export const useAccountsStore = defineStore('accounts', () => {
   // state
   const accounts: Ref<AccountInfo[]> = ref([])
   const selectedAccount: Ref<AccountInfo | undefined> = ref()
+  const picture: Ref<string | undefined> = ref()
 
   // actions
   const login = async (): Promise<void> => {
@@ -86,6 +88,15 @@ export const useAccountsStore = defineStore('accounts', () => {
     return tokenResp.accessToken
   }
 
+  const getPicture = async () => {
+    if (!picture.value) {
+      const accessToken = await acquireToken(['user.read'])
+      const blob = await getPhoto(accessToken)
+      picture.value = await blobToBase64(blob)
+    }
+    return picture.value
+  }
+
   // getters
   const accountsDetails: ComputedRef<Account[]> = computed(() => accounts.value.map(toAccount))
   const accountDetails: ComputedRef<Account | undefined> = computed(() =>
@@ -102,6 +113,8 @@ export const useAccountsStore = defineStore('accounts', () => {
     acquireToken,
     accountsDetails,
     accountDetails,
+    picture,
+    getPicture,
     isAuthenticated
   }
 })
