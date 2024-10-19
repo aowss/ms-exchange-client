@@ -3,8 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "types": "microsoft-graph.d.ts",
-  "main": "microsoft-graph.d.ts",
   "scripts": {
     "dev": "vite --port 3000",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -36,7 +34,6 @@
     "@iconify/vue": "^4.1.2",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@microsoft/microsoft-graph-types": "^2.40.0",
-    "@microsoft/microsoft-graph-types-beta": "^0.43.0-preview",
     "@playwright/test": "^1.44.1",
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",

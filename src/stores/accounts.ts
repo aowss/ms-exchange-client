@@ -1,5 +1,3 @@
-import 'isomorphic-fetch';
-
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { appConfig, msalConfig } from '@/config'
@@ -7,7 +5,6 @@ import { msalPublicClient } from '@/lib/clients'
 import { type AccountInfo, type AuthenticationResult, type PopupRequest } from '@azure/msal-browser'
 import { getPhoto, getProfile } from '@/lib/graphHelper'
 import { blobToBase64 } from '@/lib/utils'
-import type { ItemAddress, ItemPhone, Profile } from '@microsoft/microsoft-graph-types-beta'
 
 export interface Account {
   label: string
@@ -31,7 +28,7 @@ export interface Address {
 
 }
 
-const toAddress = (address: ItemAddress): Address => ({
+const toAddress = (address: any): Address => ({
   label: address.displayName || '',
   type: address.detail?.type || '',
   postOfficeBox: address.detail?.postOfficeBox || '',
@@ -47,7 +44,7 @@ export interface Phone {
   type: string
   number: string
 }
-const toPhone = (phone: ItemPhone): Phone => ({
+const toPhone = (phone: any): Phone => ({
   label: phone.displayName || '',
   type: phone.type || '',
   number: phone.number || ''
@@ -58,7 +55,7 @@ export interface ProfileInfo {
   phones?: Phone[]
 }
 
-const toProfile = (profile: Profile): ProfileInfo => ({
+const toProfile = (profile: any): ProfileInfo => ({
   addresses: profile.addresses?.map(toAddress),
   phones: profile.phones?.map(toPhone)
 })
@@ -68,7 +65,7 @@ export const useAccountsStore = defineStore('accounts', () => {
   const accounts: Ref<AccountInfo[]> = ref([])
   const selectedAccount: Ref<AccountInfo | undefined> = ref()
   const picture: Ref<string | undefined> = ref()
-  const profile: Ref<Profile | undefined> = ref()
+  const profile: Ref<ProfileInfo | undefined> = ref()
 
   // actions
   const login = async (): Promise<void> => {

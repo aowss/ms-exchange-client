@@ -13,6 +13,7 @@ import {
 import { useAccountsStore } from '@/stores/accounts'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { User, LogOut } from 'lucide-vue-next'
 
 const accountsStore = useAccountsStore()
 accountsStore.getPicture()
@@ -53,13 +54,16 @@ const logoutPopup = () => accountsStore.logout()
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <router-link to="/profile" class="text-sm font-medium transition-colors hover:text-primary"
-        >Profile</router-link
-        >
-<!--        <DropdownMenuItem> Profile </DropdownMenuItem>-->
+        <DropdownMenuItem>
+          <User class="mr-2 h-4 w-4" />
+          <span><router-link to="/profile">Profile</router-link></span>
+        </DropdownMenuItem>
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
-      <DropdownMenuItem @click="logoutPopup"> Log out </DropdownMenuItem>
+      <DropdownMenuItem @click="logoutPopup">
+        <LogOut class="mr-2 h-4 w-4" />
+        <span>Log out</span>
+      </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>
