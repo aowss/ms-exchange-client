@@ -26,7 +26,6 @@ const initials = computed(() =>
 )
 const email = accountsStore.accountDetails?.email || ''
 const { picture } = storeToRefs(accountsStore)
-const src = picture || ''
 
 const logoutPopup = () => accountsStore.logout()
 </script>
@@ -36,7 +35,7 @@ const logoutPopup = () => accountsStore.logout()
     <DropdownMenuTrigger as-child>
       <Button variant="ghost" class="relative h-8 w-8 rounded-full">
         <Avatar class="h-8 w-8">
-          <AvatarImage :src="src" :alt="initials" />
+          <AvatarImage :src="picture || ''" :alt="initials" />
           <AvatarFallback>{{ initials }}</AvatarFallback>
         </Avatar>
       </Button>
