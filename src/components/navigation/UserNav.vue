@@ -53,7 +53,10 @@ const logoutPopup = () => accountsStore.logout()
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem> Profile </DropdownMenuItem>
+        <router-link to="/profile" class="text-sm font-medium transition-colors hover:text-primary"
+        >Profile</router-link
+        >
+<!--        <DropdownMenuItem> Profile </DropdownMenuItem>-->
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
       <DropdownMenuItem @click="logoutPopup"> Log out </DropdownMenuItem>

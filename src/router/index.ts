@@ -25,6 +25,14 @@ const router = createRouter({
       }
     },
     {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/components/ProfileView.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
       path: '/failed',
       name: 'Failed',
       component: ErrorPage

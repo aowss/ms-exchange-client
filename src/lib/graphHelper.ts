@@ -1,10 +1,12 @@
 import 'isomorphic-fetch'
 import { type PageCollection } from '@microsoft/microsoft-graph-client'
 import type { Folder, MailFolder, Message, User } from '@microsoft/microsoft-graph-types'
+import { type Profile } from "@microsoft/microsoft-graph-types-beta";
 import type { EMailAddress } from '@/stores/mails'
 
 const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
 const URL_USER = 'me'
+const URL_PROFILE = '/beta/me/profile'
 const URL_PHOTO = 'me/photo/$value'
 const URL_SEND_MAIL = 'me/sendMail'
 const URL_FOLDERS = 'me/mailFolders'
@@ -44,6 +46,9 @@ export const sendMail = async (
 
 export const getUser = async (accessToken: string): Promise<User> =>
   callAPI('Get User', URL_USER, 'GET', accessToken)
+
+export const getProfile = async (accessToken: string): Promise<Profile> =>
+  callAPI('Get Profile', URL_PROFILE, 'GET', accessToken)
 
 export const getPhoto = async (accessToken: string) =>
   callAPI('Get Photo', URL_PHOTO, 'GET', accessToken)
@@ -141,14 +146,17 @@ const defaultHandler: (response: Response) => any = (response: Response) => {
   else return response.text()
 }
 
-const isJson = (response: Response) =>
-  getContentType(response)?.includes('application/json')
+const isJson = (response: Response) => getContentType(response)?.includes('application/json')
 
 const isBinary = (response: Response) => {
   const type = getType(response)
   const contentType = getContentType(response)
-  return (type && ['audio', 'image', 'video'].includes(type)) || contentType?.includes('application/octet-stream')
+  return (
+    (type && ['audio', 'image', 'video'].includes(type)) ||
+    contentType?.includes('application/octet-stream')
+  )
 }
 
-const getType = (response: Response): string | undefined => response.headers.get('Content-Type')?.split('/')[0]
+const getType = (response: Response): string | undefined =>
+  response.headers.get('Content-Type')?.split('/')[0]
 const getContentType = (response: Response): string | null => response.headers.get('Content-Type')

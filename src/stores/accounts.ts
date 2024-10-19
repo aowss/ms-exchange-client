@@ -1,10 +1,13 @@
+import 'isomorphic-fetch';
+
 import { computed, type ComputedRef, type Ref, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { appConfig, msalConfig } from '@/config'
 import { msalPublicClient } from '@/lib/clients'
 import { type AccountInfo, type AuthenticationResult, type PopupRequest } from '@azure/msal-browser'
-import { getPhoto } from '@/lib/graphHelper'
+import { getPhoto, getProfile } from '@/lib/graphHelper'
 import { blobToBase64 } from '@/lib/utils'
+import type { ItemAddress, ItemPhone, Profile } from '@microsoft/microsoft-graph-types-beta'
 
 export interface Account {
   label: string
@@ -16,11 +19,56 @@ const toAccount = (info: AccountInfo): Account => ({
   email: info.username
 })
 
+export interface Address {
+  label: string
+  type: string
+  postOfficeBox: string
+  street: string
+  city: string
+  state: string
+  countryOrRegion: string
+  postalCode: string
+
+}
+
+const toAddress = (address: ItemAddress): Address => ({
+  label: address.displayName || '',
+  type: address.detail?.type || '',
+  postOfficeBox: address.detail?.postOfficeBox || '',
+  street: address.detail?.street || '',
+  city: address.detail?.city || '',
+  state: address.detail?.state || '',
+  countryOrRegion: address.detail?.countryOrRegion || '',
+  postalCode: address.detail?.postalCode || ''
+})
+
+export interface Phone {
+  label: string
+  type: string
+  number: string
+}
+const toPhone = (phone: ItemPhone): Phone => ({
+  label: phone.displayName || '',
+  type: phone.type || '',
+  number: phone.number || ''
+})
+
+export interface ProfileInfo {
+  addresses?: Address[]
+  phones?: Phone[]
+}
+
+const toProfile = (profile: Profile): ProfileInfo => ({
+  addresses: profile.addresses?.map(toAddress),
+  phones: profile.phones?.map(toPhone)
+})
+
 export const useAccountsStore = defineStore('accounts', () => {
   // state
   const accounts: Ref<AccountInfo[]> = ref([])
   const selectedAccount: Ref<AccountInfo | undefined> = ref()
   const picture: Ref<string | undefined> = ref()
+  const profile: Ref<Profile | undefined> = ref()
 
   // actions
   const login = async (): Promise<void> => {
@@ -97,6 +145,14 @@ export const useAccountsStore = defineStore('accounts', () => {
     return picture.value
   }
 
+  const getUserProfile = async () => {
+    if (!profile.value) {
+      const accessToken = await acquireToken(['user.read'])
+      profile.value = toProfile(await getProfile(accessToken))
+    }
+    return profile.value
+  }
+
   // getters
   const accountsDetails: ComputedRef<Account[]> = computed(() => accounts.value.map(toAccount))
   const accountDetails: ComputedRef<Account | undefined> = computed(() =>
@@ -115,6 +171,8 @@ export const useAccountsStore = defineStore('accounts', () => {
     accountDetails,
     picture,
     getPicture,
+    profile,
+    getUserProfile,
     isAuthenticated
   }
 })
