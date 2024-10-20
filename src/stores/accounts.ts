@@ -7,12 +7,12 @@ import { getPhoto, getProfile } from '@/lib/graphHelper'
 import { blobToBase64 } from '@/lib/utils'
 
 export interface Account {
-  label: string
+  name: string
   email: string
 }
 
 const toAccount = (info: AccountInfo): Account => ({
-  label: info.name || info.username,
+  name: info.name || info.username,
   email: info.username
 })
 
@@ -25,18 +25,17 @@ export interface Address {
   state: string
   countryOrRegion: string
   postalCode: string
-
 }
 
 const toAddress = (address: any): Address => ({
   label: address.displayName || '',
-  type: address.detail?.type || '',
-  postOfficeBox: address.detail?.postOfficeBox || '',
-  street: address.detail?.street || '',
-  city: address.detail?.city || '',
-  state: address.detail?.state || '',
-  countryOrRegion: address.detail?.countryOrRegion || '',
-  postalCode: address.detail?.postalCode || ''
+  type: address.type || '',
+  postOfficeBox: address.postOfficeBox || '',
+  street: address.street || '',
+  city: address.city || '',
+  state: address.state || '',
+  countryOrRegion: address.countryOrRegion || '',
+  postalCode: address.postalCode || ''
 })
 
 export interface Phone {
@@ -44,20 +43,48 @@ export interface Phone {
   type: string
   number: string
 }
+
 const toPhone = (phone: any): Phone => ({
   label: phone.displayName || '',
   type: phone.type || '',
   number: phone.number || ''
 })
 
+export interface Position {
+  jobTitle: string
+  role: string
+  department: string
+  company: {
+    name: string
+    address: Address
+  }
+  manager: Account
+}
+
+const toPosition = (position: any): Position => ({
+  jobTitle: position.detail.jobTitle || '',
+  role: position.detail.role || '',
+  department: position.detail.company?.department || '',
+  company: {
+    name: position.detail.company?.displayName || '',
+    address: toAddress(position.detail.company?.address)
+  },
+  manager: {
+    name: position.manager?.displayName || '',
+    email: position.manager?.userPrincipalName || ''
+  }
+})
+
 export interface ProfileInfo {
   addresses?: Address[]
   phones?: Phone[]
+  position?: Position
 }
 
 const toProfile = (profile: any): ProfileInfo => ({
   addresses: profile.addresses?.map(toAddress),
-  phones: profile.phones?.map(toPhone)
+  phones: profile.phones?.map(toPhone),
+  position: toPosition(profile.positions[0])
 })
 
 export const useAccountsStore = defineStore('accounts', () => {

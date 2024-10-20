@@ -18,7 +18,7 @@ import { User, LogOut } from 'lucide-vue-next'
 const accountsStore = useAccountsStore()
 accountsStore.getPicture()
 
-const name = accountsStore.accountDetails?.label || ''
+const name = accountsStore.accountDetails?.name || ''
 const initials = computed(() =>
   name
     .split(' ')

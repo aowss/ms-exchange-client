@@ -42,7 +42,7 @@ const selectedEmailData = computed(() =>
         <div class="flex items-center gap-3">
           <Icon class="size-4" :icon="selectedEmailData!.icon || ''" />
           <span v-if="!isCollapsed">
-            {{ selectedEmailData!.label }}
+            {{ selectedEmailData!.name }}
           </span>
         </div>
       </SelectValue>
