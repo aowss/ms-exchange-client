@@ -4,11 +4,14 @@ import type { Folder, MailFolder, Message, User } from '@microsoft/microsoft-gra
 import type { EMailAddress } from '@/stores/mails'
 
 const GRAPH_URL = 'https://graph.microsoft.com/v1.0'
-const URL_USER = 'me'
-const URL_SEND_MAIL = 'me/sendMail'
-const URL_FOLDERS = 'me/mailFolders'
+const GRAPH_URL_BETA = 'https://graph.microsoft.com/beta'
+const URL_USER = `${GRAPH_URL}/me`
+const URL_PROFILE = `${GRAPH_URL_BETA}/me/profile`
+const URL_PHOTO = `${URL_USER}/photo/$value`
+const URL_SEND_MAIL = `${URL_USER}/sendMail`
+const URL_FOLDERS = `${URL_USER}/mailFolders`
 const URL_INBOX_MESSAGES = `${URL_FOLDERS}/inbox/messages`
-const URL_MESSAGES = 'me/messages'
+const URL_MESSAGES = `${URL_USER}/messages`
 const URL_MESSAGE = `${URL_MESSAGES}/{id}`
 const URL_REPLY = `${URL_MESSAGE}/reply`
 
@@ -43,6 +46,12 @@ export const sendMail = async (
 
 export const getUser = async (accessToken: string): Promise<User> =>
   callAPI('Get User', URL_USER, 'GET', accessToken)
+
+export const getProfile = async (accessToken: string): Promise<any> =>
+  callAPI('Get Profile', URL_PROFILE, 'GET', accessToken)
+
+export const getPhoto = async (accessToken: string) =>
+  callAPI('Get Photo', URL_PHOTO, 'GET', accessToken)
 
 export const getInbox = async (accessToken: string): Promise<PageCollection> =>
   callAPI('List Inbox messages', URL_INBOX_MESSAGES, 'GET', accessToken)
@@ -112,9 +121,10 @@ const callAPI = async (
   URL: string,
   method: string,
   accessToken: string,
-  body?: object
+  body?: object,
+  handler: (response: Response) => any = defaultHandler
 ) => {
-  const response = await fetch(`${GRAPH_URL}/${URL}`, {
+  const response: Response = await fetch(URL, {
     method: method,
     body: body ? JSON.stringify(body) : null,
     headers: {
@@ -127,8 +137,26 @@ const callAPI = async (
     throw new Error(`Error while calling ${name}: status: ${response.status}`)
   }
 
-  if (isJson(response)) return response.json()
+  return handler(response)
 }
 
-const isJson = (response: Response) =>
-  response.headers.get('Content-Type')?.includes('application/json')
+const defaultHandler: (response: Response) => any = (response: Response) => {
+  if (isJson(response)) return response.json()
+  else if (isBinary(response)) return response.blob()
+  else return response.text()
+}
+
+const isJson = (response: Response) => getContentType(response)?.includes('application/json')
+
+const isBinary = (response: Response) => {
+  const type = getType(response)
+  const contentType = getContentType(response)
+  return (
+    (type && ['audio', 'image', 'video'].includes(type)) ||
+    contentType?.includes('application/octet-stream')
+  )
+}
+
+const getType = (response: Response): string | undefined =>
+  response.headers.get('Content-Type')?.split('/')[0]
+const getContentType = (response: Response): string | null => response.headers.get('Content-Type')

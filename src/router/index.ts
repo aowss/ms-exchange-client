@@ -4,9 +4,8 @@ import {
   type NavigationGuardNext,
   type RouteLocationNormalized
 } from 'vue-router'
-import Failed from '@/views/Failed.vue'
-// import Mail from '@/components/mail/Mail.vue'
-import Home from '@/views/Home.vue'
+import ErrorPage from '@/views/ErrorPage.vue'
+import HomePage from '@/views/HomePage.vue'
 import { useAccountsStore } from '@/stores/accounts'
 
 const router = createRouter({
@@ -15,7 +14,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: Home
+      component: HomePage
     },
     {
       path: '/mail',
@@ -26,9 +25,17 @@ const router = createRouter({
       }
     },
     {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/components/ProfileView.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
       path: '/failed',
       name: 'Failed',
-      component: Failed
+      component: ErrorPage
     },
     {
       path: '/:pathMatch(.*)*',

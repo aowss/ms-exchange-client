@@ -11,8 +11,8 @@ export interface AppConfiguration {
 export const appConfig: AppConfiguration = {
   clientId: import.meta.env.VITE_MSAL_CLIENT_ID,
   tenantId: import.meta.env.VITE_MSAL_TENANT_ID,
-  loginScopes: ['openid', 'profile', 'user.read'],
-  graphScopes: ['mail.read', 'mail.send', 'mail.readwrite']
+  loginScopes: ['openid', 'profile'],
+  graphScopes: ['mail.read', 'mail.send', 'mail.readwrite', 'user.read']
 }
 
 export const msalConfig: Configuration = {
